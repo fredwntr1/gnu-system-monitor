@@ -60,4 +60,3 @@ def proc_pids():
     display_pid = list(map(str, show_pid))
     return display_pid
 
-print(psutil.net_connections())
