@@ -5,9 +5,7 @@ This is a qt app written in Python3 designed to be a more comprehensive system m
 of a standard system monitor as well as the options to overclock your gpu and set fan curves for your gpu and cpu. The last feature added will be the network monitor as well as a builtin net limiter
 as well as preventing apps from accessing the internet.
 
-So far the dependencies are:
-pyqt4 
-nvidia-ml-py3
+So far the dependencies are just PyQt4 because it can't be installed through pip. All other deps are part of the virtual enviroment.
 
 
 
@@ -15,5 +13,6 @@ nvidia-ml-py3
 
 Currently only Nvidia with the binary driver is supported as Python modules already exist for displaying gpu stats as well as overclocking, AMD cards will have to be written entirely using subprocess which will take some time.
 
+to run the app just cd into the bin folder and enter ./python ../main.py
 
 
