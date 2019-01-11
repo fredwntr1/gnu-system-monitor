@@ -1,55 +1,36 @@
 import psutil
-import numpy as np
-
-## mem_proc() function variables
-process_name = process_names = [proc.name() for proc in psutil.process_iter()]
-show_name = np.array(process_name)
-
-
-
-
-## user_proc() function variables
-find_user = process_names = [proc.username() for proc in psutil.process_iter()]
-show_user = np.array(find_user)
-
-## proc_cpu_percent() function variables
-find_cpu_percent = process_names = [proc.cpu_percent() for proc in psutil.process_iter()]
-show_cpu_percent = np.array(find_cpu_percent)
-sort_cpu_percent = show_cpu_percent.argsort()
-
-## proc_mem_percent() function variables
-find_mem_percent = process_names = [proc.memory_percent() for proc in psutil.process_iter()]
-show_mem_percent = np.array(find_mem_percent)
-round_mem_percent = np.around(show_mem_percent)
-
-
-## proc_pids() function variables
-find_pid = psutil.pids()
-show_pid = np.array(find_pid)
+import subprocess
 
 
 def mem_procs():
-    sort_name = show_name[sort_cpu_percent]
-    return list(map(str, sort_name))
+    proc_name = """ps -uc --sort command | grep -i "$USER" | awk '{print $11}'"""
+    show_proc_name = subprocess.check_output(proc_name, shell=True, universal_newlines=True).splitlines()
+    return show_proc_name
 
 
 def user_proc():
-    sort_user = show_user[sort_cpu_percent]
-    return list(map(str, sort_user))
+    find_user = """ps -uc --sort command | grep -i "$USER" | awk '{print $1}'"""
+    show_user_proc = subprocess.check_output(find_user, shell=True, universal_newlines=True).splitlines()
+    return show_user_proc
 
 
 def proc_cpu_percent():
-    return list(map(str, sort_cpu_percent))
+    find_cpu_percent = """ps -uc --sort command | grep -i "$USER" | awk '{print $3}'"""
+    show_cpu_percent = subprocess.check_output(find_cpu_percent, shell=True, universal_newlines=True).splitlines()
+    return show_cpu_percent
 
 
 def proc_mem_percent():
-    sort_mem = round_mem_percent[sort_cpu_percent]
-    return list(map(str, round_mem_percent))
+    find_mem_percent = """ps -uc --sort command | grep -i "$USER" | awk '{print $4}'"""
+    show_mem_percent = subprocess.check_output(find_mem_percent, shell=True, universal_newlines=True).splitlines()
+    return show_mem_percent
 
 
 def proc_pids():
-    display_pid = show_pid[sort_cpu_percent]
-    return list(map(str, display_pid))
+    find_pid = """ps -uc --sort command | grep -i "$USER" | awk '{print $2}'"""
+    show_pid = subprocess.check_output(find_pid, shell=True, universal_newlines=True).splitlines()
+    return show_pid
+
 
 def total_swap_mem():
     find_swap = psutil.swap_memory()
@@ -73,5 +54,4 @@ def free_mem():
     find_free_mem = psutil.virtual_memory()
     free_mem = find_free_mem.available / 1000000
     return round(free_mem)
-
 
