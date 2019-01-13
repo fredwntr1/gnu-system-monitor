@@ -7,7 +7,7 @@ import cpu_worker
 import gpu_worker
 import net_worker
 import pyqtgraph
-
+import subprocess
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
     def __init__(self):
@@ -36,9 +36,18 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.performance_oc_radio.hide()
         self.manual_fanspeed_checkbox.toggled.connect(self.gpu_fan_bar)
         self.manual_overclocking_checkbox.toggled.connect(self.overclocking_bar)
+        self.process_table_widget.cellClicked.connect(self.choose_kill_process)
+        self.end_process_pushbutton.clicked.connect(self.kill_process)
+
+
+
+
+
+
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.network_table_widget.setRowCount(len(net_processes))
+
         for i, row in enumerate(net_processes):
             self.network_table_widget.setItem(i, 0, QtGui.QTableWidgetItem(row))
         for i, row in enumerate(net_download):
@@ -98,8 +107,17 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_watts_lcd.display(nvidia_watts)
         self.gpu_fan_speed_progressbar.setValue(nvidia_fan)
 
+    def choose_kill_process(self):
+        row = self.process_table_widget.currentItem().row()
+        column = self.process_table_widget.currentItem().column()
+        cell = self.process_table_widget.item(row, column).text()
+        return cell
 
 
+
+    def kill_process(self):
+       killall = "killall %s" % self.choose_kill_process()
+       subprocess.check_output(killall, shell=True)
 
 
 
