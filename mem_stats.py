@@ -1,9 +1,5 @@
 import psutil
 import subprocess
-import time
-import os
-
-
 
 
 def mem_procs():

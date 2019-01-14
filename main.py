@@ -9,6 +9,7 @@ import net_worker
 import pyqtgraph
 import subprocess
 
+
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
     def __init__(self):
         super(MainClass, self).__init__()
@@ -38,16 +39,10 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.manual_overclocking_checkbox.toggled.connect(self.overclocking_bar)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_process_pushbutton.clicked.connect(self.kill_process)
-
-
-
-
-
-
+        self.network_limit_pushbutton.setEnabled(False)
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.network_table_widget.setRowCount(len(net_processes))
-
         for i, row in enumerate(net_processes):
             self.network_table_widget.setItem(i, 0, QtGui.QTableWidgetItem(row))
         for i, row in enumerate(net_download):
@@ -88,7 +83,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         else:
             self.gpu_fan_speed_slider.hide()
 
-
     def show_mem_stats(self, free_mem, total_mem, total_swap_mem, used_swap_mem):
         self.free_memory_lcd.display(free_mem)
         self.total_memory_lcd.display(total_mem)
@@ -113,12 +107,9 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         cell = self.process_table_widget.item(row, column).text()
         return cell
 
-
-
     def kill_process(self):
-       killall = "killall %s" % self.choose_kill_process()
-       subprocess.check_output(killall, shell=True)
-
+        killall = "killall %s" % self.choose_kill_process()
+        subprocess.check_output(killall, shell=True)
 
 
 if __name__ == '__main__':
@@ -126,3 +117,4 @@ if __name__ == '__main__':
     app = MainClass()
     app.show()
     sys.exit(a.exec_())
+
