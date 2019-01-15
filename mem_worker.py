@@ -5,9 +5,9 @@ import os
 os.system("""ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" > process_data.txt""")
 
 
-class MemWorker(QtCore.QThread):
+class MemStats(QtCore.QThread):
     def __init__(self):
-        super(MemWorker, self).__init__()
+        super(MemStats, self).__init__()
 
     def run(self):
         while True:
