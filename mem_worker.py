@@ -2,6 +2,7 @@ import time
 from PyQt4 import QtCore
 import mem_stats
 import os
+os.system("""ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" > process_data.txt""")
 
 
 class MemWorker(QtCore.QThread):
@@ -29,7 +30,6 @@ class MemProcessTableWorker(QtCore.QThread):
             process_percent = mem_stats.proc_cpu_percent()
             mem_percent = mem_stats.proc_mem_percent()
             mem_pid = mem_stats.proc_pids()
-            os.system("""ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" > process_data.txt""")
             self.emit(QtCore.SIGNAL('UPDATE_MEM_PROCS'), pid_table, proc_username, process_percent, mem_percent, mem_pid)
             time.sleep(2)
 
