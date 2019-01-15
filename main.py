@@ -85,7 +85,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         row = self.process_table_widget.currentItem().row()
         column = self.process_table_widget.currentItem().column()
         cell = self.process_table_widget.item(row, column).text()
-        print(cell)
         return cell
 
     def kill_process(self):
