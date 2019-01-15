@@ -8,10 +8,10 @@ class CpuWorker(QtCore.QThread):
         super(CpuWorker, self).__init__()
 
     def run(self):
-        temp = cpu_stats.cpu_temp()
-        cpu_percent = cpu_stats.cpu_load_percentage()
-        fan = cpu_stats.cpu_fan()
         while True:
+            temp = cpu_stats.cpu_temp()
+            cpu_percent = cpu_stats.cpu_load_percentage()
+            fan = cpu_stats.cpu_fan()
             self.emit(QtCore.SIGNAL("CPU_STATS"), cpu_percent, temp, fan)
             time.sleep(1)
 
