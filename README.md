@@ -8,18 +8,18 @@ as well as preventing apps from accessing the internet.
 So far the dependencies are just PyQt4 because it can't be installed through pip. All other deps are part of the virtual enviroment.
 
 
-![Image of Processes Page](https://github.com/fredwntr1/gnu-system-monitor/processes.png)
+![Image of Processes Page](https://github.com/fredwntr1/gnu-system-monitor/blob/master/processes.png)
 
-![Image of CPU Page](https://github.com/fredwntr1/gnu-system-monitor/gnucpu.png)
+![Image of CPU Page](https://github.com/fredwntr1/gnu-system-monitor/blob/master/gnucpu.png)
 
 
 
 Currently only Nvidia with the binary driver is supported as Python modules already exist for displaying gpu stats as well as overclocking, AMD cards will have to be written entirely using subprocess 
 which will take some time.
 
-![Image of GPU Page](https://github.com/fredwntr1/gnu-system-monitor/gnugpu.png)
+![Image of GPU Page](https://github.com/fredwntr1/gnu-system-monitor/blob/master/gnugpu.png)
 
 
-![Image of Net Page](https://github.com/fredwntr1/gnu-system-monitor/gnunet.png)
+![Image of Net Page](https://github.com/fredwntr1/gnu-system-monitor/blob/master/gnunet.png)
 
 
