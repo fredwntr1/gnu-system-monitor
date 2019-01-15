@@ -25,15 +25,12 @@ def nvidia_voltage():
     return voltage / 1000
 
 
-
-
 def nvidia_fan_speed():
     fan = nvmlDeviceGetFanSpeed(gpuObj)
     return fan
 
 
 def set_fan_speed():
-
     manual_fan = os.system("nvidia-settings -a [gpu:0]/GPUFanControlState=1")
     return manual_fan
 

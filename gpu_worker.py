@@ -7,8 +7,6 @@ class GpuWorker(QtCore.QThread):
     def __init__(self):
         super(GpuWorker, self).__init__()
 
-
-
     def run(self):
         gpu_type = "glxinfo | grep 'OpenGL vendor string:'"
         find_gpu_vendor = subprocess.check_output(gpu_type, shell=True, universal_newlines=True).strip()

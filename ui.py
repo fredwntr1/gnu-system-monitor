@@ -17,6 +17,7 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
@@ -466,6 +467,7 @@ class Ui_MainWindow(object):
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.network_tab_widget), _translate("MainWindow", "Network", None))
 
 import images_rc
+
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, f=QtCore.Qt.WindowFlags()):
