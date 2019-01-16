@@ -2,7 +2,6 @@ from PyQt4 import QtCore, QtGui
 from pyqtgraph import QtGui
 import pyqtgraph
 
-
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -17,11 +16,10 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(1298, 733)
+        MainWindow.resize(1310, 725)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout_3 = QtGui.QGridLayout(self.centralwidget)
@@ -35,6 +33,8 @@ class Ui_MainWindow(object):
         self.gridLayout = QtGui.QGridLayout(self.process_tab_widget)
         self.gridLayout.setMargin(0)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.horizontalLayout_15 = QtGui.QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(_fromUtf8("horizontalLayout_15"))
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.total_mem_frame = QtGui.QFrame(self.process_tab_widget)
@@ -47,26 +47,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.total_mem_frame)
         self.total_mem_label = QtGui.QLabel(self.process_tab_widget)
         self.total_mem_label.setMinimumSize(QtCore.QSize(120, 40))
-        self.total_mem_label.setMaximumSize(QtCore.QSize(120, 16777215))
+        self.total_mem_label.setMaximumSize(QtCore.QSize(120, 40))
         self.total_mem_label.setStyleSheet(_fromUtf8("QLabel {\n"
 "    border: 1px solid gray;\n"
 "}"))
         self.total_mem_label.setObjectName(_fromUtf8("total_mem_label"))
         self.horizontalLayout.addWidget(self.total_mem_label)
-        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
-        self.process_mem_graph = pyqtgraph.PlotWidget(self.process_tab_widget)
-        self.process_mem_graph.setMinimumSize(QtCore.QSize(0, 0))
-        self.process_mem_graph.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.process_mem_graph.setStyleSheet(_fromUtf8("QWidget {\n"
-"    border: 1px solid gray;\n"
-"    padding: 1px;\n"
-"    border-bottom-right-radius: 7px;\n"
-"    border-bottom-left-radius: 7px;\n"
-"    border-top-left-radius: 7px;\n"
-"    border-top-right-radius: 7px;\n"
-"}"))
-        self.process_mem_graph.setObjectName(_fromUtf8("process_mem_graph"))
-        self.gridLayout.addWidget(self.process_mem_graph, 0, 1, 3, 2)
+        self.horizontalLayout_15.addLayout(self.horizontalLayout)
         self.horizontalLayout_5 = QtGui.QHBoxLayout()
         self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
         self.free_mem_frame = QtGui.QFrame(self.process_tab_widget)
@@ -79,14 +66,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.free_mem_frame)
         self.free_mem_label = QtGui.QLabel(self.process_tab_widget)
         self.free_mem_label.setMinimumSize(QtCore.QSize(120, 40))
-        self.free_mem_label.setMaximumSize(QtCore.QSize(120, 16777215))
+        self.free_mem_label.setMaximumSize(QtCore.QSize(120, 40))
         self.free_mem_label.setStyleSheet(_fromUtf8("QLabel {\n"
 "    border: 1px solid gray;\n"
 "}\n"
 ""))
         self.free_mem_label.setObjectName(_fromUtf8("free_mem_label"))
         self.horizontalLayout_5.addWidget(self.free_mem_label)
-        self.gridLayout.addLayout(self.horizontalLayout_5, 1, 0, 1, 1)
+        self.horizontalLayout_15.addLayout(self.horizontalLayout_5)
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
         self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
         self.swap_mem_frame = QtGui.QFrame(self.process_tab_widget)
@@ -99,17 +86,31 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.swap_mem_frame)
         self.swap_mem_label = QtGui.QLabel(self.process_tab_widget)
         self.swap_mem_label.setMinimumSize(QtCore.QSize(120, 40))
-        self.swap_mem_label.setMaximumSize(QtCore.QSize(120, 16777215))
+        self.swap_mem_label.setMaximumSize(QtCore.QSize(120, 40))
         self.swap_mem_label.setStyleSheet(_fromUtf8("QLabel {\n"
 "    border: 1px solid gray;\n"
 "}"))
         self.swap_mem_label.setObjectName(_fromUtf8("swap_mem_label"))
         self.horizontalLayout_6.addWidget(self.swap_mem_label)
-        self.gridLayout.addLayout(self.horizontalLayout_6, 2, 0, 1, 1)
-        spacerItem = QtGui.QSpacerItem(1255, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem, 3, 0, 1, 3)
+        self.horizontalLayout_15.addLayout(self.horizontalLayout_6)
+        self.gridLayout.addLayout(self.horizontalLayout_15, 0, 0, 1, 2)
+        self.process_mem_graph = pyqtgraph.PlotWidget(self.process_tab_widget)
+        self.process_mem_graph.setMinimumSize(QtCore.QSize(0, 275))
+        self.process_mem_graph.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.process_mem_graph.setStyleSheet(_fromUtf8("QWidget {\n"
+"    border: 1px solid gray;\n"
+"    padding: 1px;\n"
+"    border-bottom-right-radius: 7px;\n"
+"    border-bottom-left-radius: 7px;\n"
+"    border-top-left-radius: 7px;\n"
+"    border-top-right-radius: 7px;\n"
+"}"))
+        self.process_mem_graph.setObjectName(_fromUtf8("process_mem_graph"))
+        self.gridLayout.addWidget(self.process_mem_graph, 1, 0, 1, 2)
+        spacerItem = QtGui.QSpacerItem(1267, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem, 2, 0, 1, 2)
         self.process_table_widget = QtGui.QTableWidget(self.process_tab_widget)
-        self.process_table_widget.setMinimumSize(QtCore.QSize(0, 380))
+        self.process_table_widget.setMinimumSize(QtCore.QSize(0, 0))
         self.process_table_widget.setStyleSheet(_fromUtf8("QTableWidget {\n"
 "    border: 1px solid gray;\n"
 "    padding: 1px;\n"
@@ -130,9 +131,9 @@ class Ui_MainWindow(object):
         self.process_table_widget.setHorizontalHeaderLabels(['Process', 'User', 'CPU%', 'MEM%', 'PID'])
         self.process_table_widget.setVerticalHeaderLabels([None])
         self.process_table_widget.verticalHeader().setVisible(False)
-        self.gridLayout.addWidget(self.process_table_widget, 4, 0, 1, 3)
-        spacerItem1 = QtGui.QSpacerItem(1340, 24, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.gridLayout.addItem(spacerItem1, 5, 0, 1, 2)
+        self.gridLayout.addWidget(self.process_table_widget, 3, 0, 1, 2)
+        spacerItem1 = QtGui.QSpacerItem(1170, 24, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout.addItem(spacerItem1, 4, 0, 1, 1)
         self.end_task_pushbutton = QtGui.QPushButton(self.process_tab_widget)
         self.end_task_pushbutton.setMaximumSize(QtCore.QSize(120, 16777215))
         self.end_task_pushbutton.setStyleSheet(_fromUtf8("QPushButton {\n"
@@ -141,19 +142,16 @@ class Ui_MainWindow(object):
 "    padding: 3px;\n"
 "}"))
         self.end_task_pushbutton.setObjectName(_fromUtf8("end_task_pushbutton"))
-        self.gridLayout.addWidget(self.end_task_pushbutton, 5, 2, 1, 1)
-        self.total_mem_frame.raise_()
-        self.free_mem_frame.raise_()
-        self.swap_mem_frame.raise_()
-        self.free_mem_frame.raise_()
+        self.gridLayout.addWidget(self.end_task_pushbutton, 4, 1, 1, 1)
+        self.process_table_widget.raise_()
         self.end_task_pushbutton.raise_()
         self.process_mem_graph.raise_()
         self.tab_widget.addTab(self.process_tab_widget, _fromUtf8(""))
         self.cpu_tab_widget = QtGui.QWidget()
         self.cpu_tab_widget.setObjectName(_fromUtf8("cpu_tab_widget"))
-        self.formLayout = QtGui.QFormLayout(self.cpu_tab_widget)
-        self.formLayout.setMargin(0)
-        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.gridLayout_5 = QtGui.QGridLayout(self.cpu_tab_widget)
+        self.gridLayout_5.setMargin(0)
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
@@ -192,21 +190,11 @@ class Ui_MainWindow(object):
         self.cpu_fan_speed_label.setObjectName(_fromUtf8("cpu_fan_speed_label"))
         self.horizontalLayout_3.addWidget(self.cpu_fan_speed_label)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.formLayout.setLayout(0, QtGui.QFormLayout.LabelRole, self.verticalLayout)
+        self.gridLayout_5.addLayout(self.verticalLayout, 0, 0, 1, 1)
         spacerItem2 = QtGui.QSpacerItem(1059, 89, QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Minimum)
-        self.formLayout.setItem(0, QtGui.QFormLayout.FieldRole, spacerItem2)
+        self.gridLayout_5.addItem(spacerItem2, 0, 1, 1, 1)
         spacerItem3 = QtGui.QSpacerItem(1255, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.formLayout.setItem(1, QtGui.QFormLayout.SpanningRole, spacerItem3)
-        self.cpu_table_widget = QtGui.QTableWidget(self.cpu_tab_widget)
-        self.cpu_table_widget.setObjectName(_fromUtf8("cpu_table_widget"))
-        self.cpu_header = self.cpu_table_widget.horizontalHeader()
-        self.cpu_table_widget.setRowCount(2)
-        self.cpu_table_widget.setVerticalHeaderLabels(["MHz", "Percent"])
-        self.formLayout.setWidget(3, QtGui.QFormLayout.SpanningRole, self.cpu_table_widget)
-        self.cpu_graph_widget = pyqtgraph.PlotWidget(self.cpu_tab_widget)
-        self.cpu_graph_widget.setMinimumSize(QtCore.QSize(0, 300))
-        self.cpu_graph_widget.setObjectName(_fromUtf8("cpu_graph_widget"))
-        self.formLayout.setWidget(4, QtGui.QFormLayout.SpanningRole, self.cpu_graph_widget)
+        self.gridLayout_5.addItem(spacerItem3, 1, 0, 1, 2)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
         self.frame_3 = QtGui.QFrame(self.cpu_tab_widget)
@@ -230,7 +218,20 @@ class Ui_MainWindow(object):
         self.cpu_load_progressbar.setProperty("value", 24)
         self.cpu_load_progressbar.setObjectName(_fromUtf8("cpu_load_progressbar"))
         self.horizontalLayout_4.addWidget(self.cpu_load_progressbar)
-        self.formLayout.setLayout(2, QtGui.QFormLayout.SpanningRole, self.horizontalLayout_4)
+        self.gridLayout_5.addLayout(self.horizontalLayout_4, 2, 0, 1, 2)
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.cpu_table_widget = QtGui.QTableWidget(self.cpu_tab_widget)
+        self.cpu_table_widget.setObjectName(_fromUtf8("cpu_table_widget"))
+        self.cpu_header = self.cpu_table_widget.horizontalHeader()
+        self.cpu_table_widget.setRowCount(2)
+        self.cpu_table_widget.setVerticalHeaderLabels(["MHz", "Percent"])
+        self.verticalLayout_2.addWidget(self.cpu_table_widget)
+        self.cpu_graph_widget = pyqtgraph.PlotWidget(self.cpu_tab_widget)
+        self.cpu_graph_widget.setMinimumSize(QtCore.QSize(0, 400))
+        self.cpu_graph_widget.setObjectName(_fromUtf8("cpu_graph_widget"))
+        self.verticalLayout_2.addWidget(self.cpu_graph_widget)
+        self.gridLayout_5.addLayout(self.verticalLayout_2, 3, 0, 1, 2)
         self.tab_widget.addTab(self.cpu_tab_widget, _fromUtf8(""))
         self.gpu_tab_widget = QtGui.QWidget()
         self.gpu_tab_widget.setObjectName(_fromUtf8("gpu_tab_widget"))
@@ -414,15 +415,10 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
         self.net_process_widget = QtGui.QTableWidget(self.network_tab_widget)
         self.net_process_widget.setObjectName(_fromUtf8("net_process_widget"))
-        self.net_process_widget.setColumnCount(3)
+        self.net_process_widget.setColumnCount(0)
         self.net_process_widget.setRowCount(0)
-        self.net_header = self.net_process_widget.horizontalHeader()
-        self.net_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
-        self.net_header.setResizeMode(1, QtGui.QHeaderView.Stretch)
-        self.net_header.setResizeMode(2, QtGui.QHeaderView.Stretch)
-        self.net_process_widget.setHorizontalHeaderLabels(['Application', 'Download', 'Upload'])
         self.gridLayout_4.addWidget(self.net_process_widget, 0, 0, 1, 1)
-        self.net_speed_graph = pyqtgraph.PlotWidget(self.network_tab_widget)
+        self.net_speed_graph = QtGui.QWidget(self.network_tab_widget)
         self.net_speed_graph.setMinimumSize(QtCore.QSize(600, 0))
         self.net_speed_graph.setObjectName(_fromUtf8("net_speed_graph"))
         self.gridLayout_4.addWidget(self.net_speed_graph, 0, 1, 1, 2)
@@ -446,7 +442,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "Complete System Monitor", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.total_mem_label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:20pt;\">Total</span></p></body></html>", None))
         self.free_mem_label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:20pt;\">Free</span></p></body></html>", None))
         self.swap_mem_label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:20pt;\">Swap</span></p></body></html>", None))
@@ -459,17 +455,16 @@ class Ui_MainWindow(object):
         self.gpu_mem_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">M Speed</span></p></body></html>", None))
         self.gpu_temp_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">Gpu Temp</span></p></body></html>", None))
         self.gpu_watts_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">Gpu Watts</span></p></body></html>", None))
-        self.gpu_fcurve_checkbox.setText(_translate("MainWindow", "Fan Curve", None))
-        self.gpu_cfan_checkbox.setText(_translate("MainWindow", "Manual Fan", None))
-        self.gpu_oc_checkbox.setText(_translate("MainWindow", "Enable OC", None))
-        self.gpu_adaptive_radio.setText(_translate("MainWindow", "Adaptive", None))
-        self.gpu_performance_radio.setText(_translate("MainWindow", "Performance", None))
+        self.gpu_fcurve_checkbox.setText(_translate("MainWindow", "CheckBox", None))
+        self.gpu_cfan_checkbox.setText(_translate("MainWindow", "CheckBox", None))
+        self.gpu_oc_checkbox.setText(_translate("MainWindow", "CheckBox", None))
+        self.gpu_adaptive_radio.setText(_translate("MainWindow", "RadioButton", None))
+        self.gpu_performance_radio.setText(_translate("MainWindow", "RadioButton", None))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.gpu_tab_widget), _translate("MainWindow", "GPU", None))
         self.net_limit_pushbutton.setText(_translate("MainWindow", "Set Limit", None))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.network_tab_widget), _translate("MainWindow", "Network", None))
 
 import images_rc
-
 
 class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None, f=QtCore.Qt.WindowFlags()):
