@@ -2,7 +2,6 @@ import time
 from PyQt4 import QtCore
 import mem_stats
 import os
-os.system("""ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" > process_data.txt""")
 
 
 class MemStats(QtCore.QThread):

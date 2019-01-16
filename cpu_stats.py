@@ -9,12 +9,18 @@ def list_cpus():
     return total_cpu
 
 
+def cpu_clock_speed():
+    clock_speed = "cat /proc/cpuinfo | grep MHz | awk '{print $4}'"
+    show_speed = subprocess.check_output(clock_speed, shell=True, universal_newlines=True).splitlines()
+    speed = '\t'.join(show_speed)
+    return speed
+
+cpu_clock_speed()
+
 def cpu_load_percentage():
         cpu_load = psutil.cpu_percent(percpu=False)
         show_cpu_load = np.array(cpu_load)
         return show_cpu_load
-
-
 
 
 def cpu_temp():
@@ -22,8 +28,8 @@ def cpu_temp():
     find_cpu_model = subprocess.check_output(find_cpu, shell=True, universal_newlines=True).strip()
     show_cpu_model = repr(find_cpu_model)
     if show_cpu_model == repr('AMD'):
-        cpu_temp = 'sensors | grep Tdie: | cut -c 16-19'
-        temp = subprocess.check_output(cpu_temp, shell=True, universal_newlines=True).strip()
+        find_temp = 'sensors | grep Tdie: | cut -c 16-19'
+        temp = subprocess.check_output(find_temp, shell=True, universal_newlines=True).strip()
         show_temp = repr(temp)
         if show_temp == repr(temp):
             return temp
@@ -39,15 +45,17 @@ def cpu_temp():
         np.around(temp_update)
         return sum(temp_update) / len(temp_update)
 
+
 def cpu_fan():
     find_cpu = "lscpu | grep 'Model name:' | cut -c 22-24"
     find_cpu_model = subprocess.check_output(find_cpu, shell=True, universal_newlines=True).strip()
     show_cpu_model = repr(find_cpu_model)
     if show_cpu_model == repr('AMD'):
-        cpu_fan = 'sensors | grep -m 1 fan | cut -c 24-28'
-        pass_cpu_fan = subprocess.check_output(cpu_fan, shell=True, universal_newlines=True).strip()
+        fan = 'sensors | grep -m 1 fan | cut -c 24-28'
+        pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).strip()
         show_cpu_fan = int(pass_cpu_fan)
         return show_cpu_fan
     elif show_cpu_model == repr('Int'):
         return 0
+
 

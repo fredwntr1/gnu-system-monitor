@@ -19,6 +19,8 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_worker = cpu_worker.CpuWorker()
         self.gpu_stats = gpu_worker.GpuStats()
         self.net_worker = net_worker.NetProcessWorker()
+        self.cpu_table = cpu_worker.CpuTable()
+        self.cpu_table.start()
         self.mem_stats.start()
         self.cpu_worker.start()
         self.gpu_stats.start()
@@ -29,6 +31,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.connect(self.gpu_stats, QtCore.SIGNAL("GPU_STATS"), self.show_gpu_stats)
         self.connect(self.mem_table, QtCore.SIGNAL('UPDATE_MEM_PROCS'), self.update_process_table)
         self.connect(self.net_worker, QtCore.SIGNAL("NET_STATS"), self.show_net_stats)
+        self.connect(self.cpu_table, QtCore.SIGNAL("CPU_TABLE"), self.update_cpu_table)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
         self.net_limit_pushbutton.setEnabled(False)
@@ -73,12 +76,12 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.swap_mem_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.swap_mem_label.setText("   %d" % used_swap_mem)
 
-    def show_cpu_stats(self, cpu_fan, cpu_percent, cpu_temp):
+    def show_cpu_stats(self, cpu_percent, temp, fan):
         self.cpu_fan_speed_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.cpu_fan_speed_label.setText("%d RPM" % cpu_fan)
+        self.cpu_fan_speed_label.setText("%d RPM" % fan)
         self.cpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.cpu_load_progressbar.setValue(cpu_percent)
-        self.cpu_temp_label.setText("   %d C" % cpu_temp)
+        self.cpu_temp_label.setText("   %d C" % temp)
 
     def show_gpu_stats(self, nvidia_temp, nvidia_mem, nvidia_clock, nvidia_watts, nvidia_fan):
         self.gpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
@@ -90,6 +93,9 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_watts_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.gpu_watts_label.setText("%d W" % nvidia_watts)
         self.gpu_fan_progressbar.setValue(nvidia_fan)
+
+    def update_cpu_table(self, cpu_freq):
+        self.cpu_table_widget.setItem(0, 0, QtGui.QTableWidgetItem(cpu_freq))
 
 
     def choose_kill_process(self):

@@ -3,31 +3,31 @@ import subprocess
 
 
 def mem_procs():
-    proc_name = """awk '{print $2}' process_data.txt"""
+    proc_name = """ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" | awk '{print $2}'"""
     show_proc_name = subprocess.check_output(proc_name, shell=True, universal_newlines=True).splitlines()
     return show_proc_name
 
 
 def user_proc():
-    find_user = """awk '{print $1}' process_data.txt"""
+    find_user = """ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" | awk '{print $1}'"""
     show_user_proc = subprocess.check_output(find_user, shell=True, universal_newlines=True).splitlines()
     return show_user_proc
 
 
 def proc_cpu_percent():
-    find_cpu_percent = """awk '{print $4}' process_data.txt"""
+    find_cpu_percent = """ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER"| awk '{print $4}'"""
     show_cpu_percent = subprocess.check_output(find_cpu_percent, shell=True, universal_newlines=True).splitlines()
     return show_cpu_percent
 
 
 def proc_mem_percent():
-    find_mem_percent = """awk '{print $3}' process_data.txt"""
+    find_mem_percent = """ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" | awk '{print $3}'"""
     show_mem_percent = subprocess.check_output(find_mem_percent, shell=True, universal_newlines=True).splitlines()
     return show_mem_percent
 
 
 def proc_pids():
-    find_pid = """awk '{print $5}' process_data.txt"""
+    find_pid = """ps -eo user,comm,%mem,%cpu,pid | grep -i "$USER" | awk '{print $5}'"""
     show_pid = subprocess.check_output(find_pid, shell=True, universal_newlines=True).splitlines()
     return show_pid
 

@@ -15,3 +15,14 @@ class CpuWorker(QtCore.QThread):
             self.emit(QtCore.SIGNAL("CPU_STATS"), cpu_percent, temp, fan)
             time.sleep(1)
 
+
+class CpuTable(QtCore.QThread):
+    def __init__(self):
+        super(CpuTable, self).__init__()
+
+    def run(self):
+        while True:
+            #core_count = cpu_stats.list_cpus()
+            cpu_freq = cpu_stats.cpu_clock_speed()
+            self.emit(QtCore.SIGNAL("CPU_TABLE"), cpu_freq)
+            time.sleep(1)
