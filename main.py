@@ -8,7 +8,7 @@ import gpu_worker
 import net_worker
 import pyqtgraph
 import subprocess
-import time
+
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
     def __init__(self):
@@ -45,6 +45,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_watts_sliderbar.valueChanged.connect(self.enable_gpu_watts_oc)
         self.gpu_adaptive_radio.setEnabled(False)
         self.gpu_performance_radio.setEnabled(False)
+        self.gpu_watts_sliderbar.setEnabled(False)
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
@@ -81,7 +82,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_fan_speed_label.setText("%d RPM" % fan)
         self.cpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.cpu_load_progressbar.setValue(cpu_percent)
-        self.cpu_temp_label.setText("   %d C" % temp)
+        self.cpu_temp_label.setText("   %s C" % temp)
 
     def show_gpu_stats(self, nvidia_temp, nvidia_mem, nvidia_clock, nvidia_watts, nvidia_fan):
         self.gpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
@@ -94,9 +95,18 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_watts_label.setText("%d W" % nvidia_watts)
         self.gpu_fan_progressbar.setValue(nvidia_fan)
 
-    def update_cpu_table(self, cpu_freq):
-        self.cpu_table_widget.setItem(0, 0, QtGui.QTableWidgetItem(cpu_freq))
-
+    def update_cpu_table(self, cpu_freq, core_count, cpu_percent):
+        self.cpu_table_widget.setColumnCount(core_count)
+        cpu_list = []
+        for x in (range(core_count)):
+            self.cpu_header.setResizeMode(x, QtGui.QHeaderView.Stretch)
+            x = "CPU: " + str(x)
+            cpu_list.append(str(x))
+        self.cpu_table_widget.setHorizontalHeaderLabels(cpu_list)
+        for i, column in enumerate(cpu_freq):
+            self.cpu_table_widget.setItem(0, i, QtGui.QTableWidgetItem(column))
+        for i, column in enumerate(cpu_percent):
+            self.cpu_table_widget.setItem(1, i, QtGui.QTableWidgetItem(column))
 
     def choose_kill_process(self):
         row = self.process_table_widget.currentItem().row()

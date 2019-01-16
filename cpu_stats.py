@@ -3,7 +3,6 @@ import subprocess
 import numpy as np
 
 
-# list number of cpu cores as well as logical cores so far this function is unused
 def list_cpus():
     total_cpu = psutil.cpu_count(logical=True)
     return total_cpu
@@ -12,15 +11,19 @@ def list_cpus():
 def cpu_clock_speed():
     clock_speed = "cat /proc/cpuinfo | grep MHz | awk '{print $4}'"
     show_speed = subprocess.check_output(clock_speed, shell=True, universal_newlines=True).splitlines()
-    speed = '\t'.join(show_speed)
-    return speed
+    return show_speed
 
-cpu_clock_speed()
 
 def cpu_load_percentage():
         cpu_load = psutil.cpu_percent(percpu=False)
         show_cpu_load = np.array(cpu_load)
         return show_cpu_load
+
+
+def total_cpu_percentage():
+    cpu_load = psutil.cpu_percent(percpu=True)
+    cpu_load = list(map(str, cpu_load))
+    return cpu_load
 
 
 def cpu_temp():

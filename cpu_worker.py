@@ -22,7 +22,8 @@ class CpuTable(QtCore.QThread):
 
     def run(self):
         while True:
-            #core_count = cpu_stats.list_cpus()
+            core_count = cpu_stats.list_cpus()
             cpu_freq = cpu_stats.cpu_clock_speed()
-            self.emit(QtCore.SIGNAL("CPU_TABLE"), cpu_freq)
+            cpu_percent = cpu_stats.total_cpu_percentage()
+            self.emit(QtCore.SIGNAL("CPU_TABLE"), cpu_freq, core_count, cpu_percent)
             time.sleep(1)
