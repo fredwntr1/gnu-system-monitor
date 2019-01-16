@@ -6,8 +6,9 @@ import mem_worker
 import cpu_worker
 import gpu_worker
 import net_worker
-import pyqtgraph
+import pyqtgraph as pg
 import subprocess
+import time
 
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
@@ -46,6 +47,17 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_adaptive_radio.setEnabled(False)
         self.gpu_performance_radio.setEnabled(False)
         self.gpu_watts_sliderbar.setEnabled(False)
+        self.gpu_clock_sliderbar.setEnabled(False)
+        self.gpu_mem_sliderbar.setEnabled(False)
+        self.gpu_fan_slider.setEnabled(False)
+
+
+    def mem_usage_graph(self):
+        import mem_stats
+        free_mem_plot = mem_stats.free_mem()
+        while True:
+            self.process_mem_graph.plotItem(free_mem_plot)
+            time.sleep(2)
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
@@ -131,13 +143,18 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         auto = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
         if self.gpu_cfan_checkbox.isChecked():
             subprocess.check_output(manual, shell=True)
+            self.gpu_fan_slider.setEnabled(True)
         else:
             self.gpu_fan_slider.setValue(0)
             subprocess.check_output(auto, shell=True)
+            self.gpu_fan_slider.setEnabled(False)
 
     def oc_performance_level(self):
 
         if self.gpu_oc_checkbox.checkState() == QtCore.Qt.Checked:
+            self.gpu_mem_sliderbar.setEnabled(True)
+            self.gpu_clock_sliderbar.setEnabled(True)
+            self.gpu_watts_sliderbar.setEnabled(True)
             self.gpu_adaptive_radio.setEnabled(True)
             self.gpu_performance_radio.setEnabled(True)
         elif self.gpu_oc_checkbox.checkState() != QtCore.Qt.Checked:
@@ -146,6 +163,9 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             self.gpu_watts_sliderbar.setValue(0)
             self.gpu_performance_radio.setEnabled(False)
             self.gpu_adaptive_radio.setEnabled(False)
+            self.gpu_watts_sliderbar.setEnabled(False)
+            self.gpu_clock_sliderbar.setEnabled(False)
+            self.gpu_mem_sliderbar.setEnabled(False)
         if self.gpu_adaptive_radio.isChecked():
             self.gpu_performance_radio.setChecked(False)
         elif self.gpu_performance_radio.isChecked():
@@ -157,16 +177,18 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         mem_value = self.gpu_mem_sliderbar.value()
         adaptive_mem = "nvidia-settings -a [gpu:0]/GPUMemoryTransferRateOffset[%d]=%d" % (adaptive, mem_value)
         performance_mem = "nvidia-settings -a [gpu:0]/GPUMemoryTransferRateOffset[%d]=%d" % (performance, mem_value)
+        clear_mem_oc = "nvidia-settings -a [gpu:0]/GPUMemoryTransferRateOffset[3]=0"
         self.gpu_mem_sliderbar.setMinimum(0)
         self.gpu_mem_sliderbar.setMaximum(2000)
         if self.gpu_oc_checkbox.isChecked() and self.gpu_adaptive_radio.isChecked():
             show_mem = subprocess.check_output(adaptive_mem, shell=True)
-            print(show_mem)
             return show_mem
         elif self.gpu_oc_checkbox.isChecked() and self.gpu_performance_radio.isChecked():
             show_mem = subprocess.check_output(performance_mem, shell=True)
-            print(show_mem)
             return show_mem
+        elif self.gpu_oc_checkbox.checkState() != QtCore.Qt.Checked:
+            clear = subprocess.check_output(clear_mem_oc, shell=True)
+            return clear
 
     def enable_gpu_core_oc(self):
         adaptive = 2
@@ -174,16 +196,18 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         clock_value = self.gpu_clock_sliderbar.value()
         adaptive_clock = "nvidia-settings -a [gpu:0]/GPUGraphicsClockOffset[%d]=%d" % (adaptive, clock_value)
         performance_clock = "nvidia-settings -a [gpu:0]/GPUGraphicsClockOffset[%d]=%d" % (performance, clock_value)
+        clear_clock = "nvidia-settings -a [gpu:0]/GPUGraphicsClockOffset[3]=0"
         self.gpu_clock_sliderbar.setMinimum(0)
         self.gpu_clock_sliderbar.setMaximum(800)
         if self.gpu_oc_checkbox.isChecked() and self.gpu_adaptive_radio.isChecked():
             show_clock = subprocess.check_output(adaptive_clock, shell=True)
-            print(show_clock)
             return show_clock
         elif self.gpu_oc_checkbox.isChecked() and self.gpu_performance_radio.isChecked():
             show_clock = subprocess.check_output(performance_clock, shell=True)
-            print(show_clock)
             return show_clock
+        elif self.gpu_oc_checkbox.checkState() != QtCore.Qt.Checked:
+            clear = subprocess.check_output(clear_clock, shell=True)
+            return clear
 
     def enable_gpu_watts_oc(self):
         adaptive = 2
@@ -191,16 +215,18 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         watts_value = self.gpu_watts_sliderbar.value()
         adaptive_watts = "nvidia-settings -a [gpu:0]/GPUOverVoltageOffset[%d]=%d" % (adaptive, watts_value)
         performance_watts = "nvidia-settings -a [gpu:0]/GPUOverVoltageOffset[%d]=%d" % (performance, watts_value)
+        clear_watts_oc = "nvidia-settings -a [gpu:0]/GPUOverVoltageOffset[3]=0"
         self.gpu_watts_sliderbar.setMinimum(0)
         self.gpu_watts_sliderbar.setMaximum(30)
         if self.gpu_oc_checkbox.isChecked() and self.gpu_adaptive_radio.isChecked():
             show_watts = subprocess.check_output(adaptive_watts, shell=True)
-            print(show_watts)
             return show_watts
         elif self.gpu_oc_checkbox.isChecked() and self.gpu_performance_radio.isChecked():
             show_watts = subprocess.check_output(performance_watts, shell=True)
-            print(show_watts)
             return show_watts
+        elif self.gpu_oc_checkbox.checkState() != QtCore.Qt.Checked:
+            clear = subprocess.check_output(clear_watts_oc, shell=True)
+            return clear
 
 
 if __name__ == '__main__':
