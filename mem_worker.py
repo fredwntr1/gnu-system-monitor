@@ -33,8 +33,16 @@ class MemProcessTableWorker(QtCore.QThread):
             time.sleep(2)
 
 
+class MemGraphWorker(QtCore.QThread):
+    def __init__(self):
+        super(MemGraphWorker, self).__init__()
 
-
-
+    def run(self):
+        while True:
+            used_mem = mem_stats.used_mem()
+            free_mem = mem_stats.free_mem_percent()
+            self.emit(QtCore.SIGNAL('UPDATE_MEM_GRAPH'), used_mem, free_mem)
+            time.sleep(0.5)
+           # self.exec_()
 
 

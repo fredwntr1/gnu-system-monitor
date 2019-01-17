@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import sys
 from PyQt4 import QtCore, QtGui
+import numpy as np
+import pyqtgraph as pg
 import ui
 import mem_worker
 import cpu_worker
 import gpu_worker
 import net_worker
-import pyqtgraph as pg
 import subprocess
 import time
 
@@ -21,6 +22,8 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_stats = gpu_worker.GpuStats()
         self.net_worker = net_worker.NetProcessWorker()
         self.cpu_table = cpu_worker.CpuTable()
+        self.mem_graph_worker = mem_worker.MemGraphWorker()
+        self.mem_graph_worker.start()
         self.cpu_table.start()
         self.mem_stats.start()
         self.cpu_worker.start()
@@ -33,6 +36,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.connect(self.mem_table, QtCore.SIGNAL('UPDATE_MEM_PROCS'), self.update_process_table)
         self.connect(self.net_worker, QtCore.SIGNAL("NET_STATS"), self.show_net_stats)
         self.connect(self.cpu_table, QtCore.SIGNAL("CPU_TABLE"), self.update_cpu_table)
+        self.connect(self.mem_graph_worker, QtCore.SIGNAL("UPDATE_MEM_GRAPH"), self.update_mem_graph)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
         self.net_limit_pushbutton.setEnabled(False)
@@ -50,6 +54,21 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_clock_sliderbar.setEnabled(False)
         self.gpu_mem_sliderbar.setEnabled(False)
         self.gpu_fan_slider.setEnabled(False)
+
+
+    def update_mem_graph(self, used_mem, free_mem):
+
+        ticks = ["used", "free"]
+        x2dict = dict(enumerate(ticks))
+        y1 = [used_mem, free_mem]
+        x1 = np.arange(len(ticks))
+        self.process_mem_graph.getAxis('bottom').setTicks([x2dict.items()])
+        self.process_mem_graph.setLabel('left', '<span style="color: white">Memory</span>', units='%')
+        self.process_mem_graph.setYRange(0, 100, padding=0)
+        self.process_mem_graph.setXRange(0, len(ticks), padding=0.2)
+        p1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
+        self.process_mem_graph.addItem(p1)
+
 
 
     def mem_usage_graph(self):

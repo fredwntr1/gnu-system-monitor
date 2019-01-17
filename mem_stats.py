@@ -55,3 +55,12 @@ def free_mem():
     free_mem = find_free_mem.available / 1000000
     return round(free_mem)
 
+
+def used_mem():
+    used = psutil.virtual_memory()
+    return used.used / used.total * 100
+
+
+def free_mem_percent():
+    free = psutil.virtual_memory()
+    return free.free / free.total * 100
