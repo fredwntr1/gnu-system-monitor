@@ -27,3 +27,16 @@ class CpuTable(QtCore.QThread):
             cpu_percent = cpu_stats.total_cpu_percentage()
             self.emit(QtCore.SIGNAL("CPU_TABLE"), cpu_freq, core_count, cpu_percent)
             time.sleep(1)
+
+
+class CpuGraphWorker(QtCore.QThread):
+    def __init__(self):
+        super(CpuGraphWorker, self).__init__()
+
+    def run(self):
+        while True:
+            core_count = cpu_stats.list_cpus()
+            cpu_load = cpu_stats.total_cpu_percentage()
+            self.emit(QtCore.SIGNAL("CPU_GRAPH"), core_count, cpu_load)
+            time.sleep(1)
+

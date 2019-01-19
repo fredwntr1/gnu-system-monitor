@@ -41,8 +41,9 @@ class MemGraphWorker(QtCore.QThread):
         while True:
             used_mem = mem_stats.used_mem()
             free_mem = mem_stats.free_mem_percent()
-            self.emit(QtCore.SIGNAL('UPDATE_MEM_GRAPH'), used_mem, free_mem)
-            time.sleep(0.5)
-           # self.exec_()
+            used_swap = mem_stats.swap_percent()
+            self.emit(QtCore.SIGNAL('UPDATE_MEM_GRAPH'), used_mem, free_mem, used_swap)
+            time.sleep(1)
+          
 
 

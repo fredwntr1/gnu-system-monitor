@@ -24,6 +24,8 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_table = cpu_worker.CpuTable()
         self.mem_graph_worker = mem_worker.MemGraphWorker()
         self.mem_graph_worker.start()
+        self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
+        self.cpu_graph_worker.start()
         self.cpu_table.start()
         self.mem_stats.start()
         self.cpu_worker.start()
@@ -37,6 +39,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.connect(self.net_worker, QtCore.SIGNAL("NET_STATS"), self.show_net_stats)
         self.connect(self.cpu_table, QtCore.SIGNAL("CPU_TABLE"), self.update_cpu_table)
         self.connect(self.mem_graph_worker, QtCore.SIGNAL("UPDATE_MEM_GRAPH"), self.update_mem_graph)
+        self.connect(self.cpu_graph_worker, QtCore.SIGNAL("CPU_GRAPH"), self.update_cpu_graph)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
         self.net_limit_pushbutton.setEnabled(False)
@@ -55,21 +58,34 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_mem_sliderbar.setEnabled(False)
         self.gpu_fan_slider.setEnabled(False)
 
+    def update_cpu_graph(self, core_count, cpu_load):
+        cores = []
+        load = np.array(cpu_load)
+        flload = load.astype(float)
+        for x in (range(core_count)):
+            x = "CPU: " + str(x)
+            cores.append(x)
+        x2dict = dict(enumerate(cores))
+        self.cpu_graph_widget.getAxis('bottom').setTicks([x2dict.items()])
+        x1 = np.arange(len(cores))
+        y1 = flload.tolist()
+        self.cpu_graph_widget.setLabel('left', '<span style="color: white">Cpu Load</span>', units='%')
+        self.cpu_graph_widget.setXRange(0, len(cores), padding=0.1)
+        self.cpu_graph_widget.setYRange(0, 100, padding=0)
+        c1 = pg.BarGraphItem(x=x1, height=y1, width=0.2)
+        self.cpu_graph_widget.addItem(c1)
 
-    def update_mem_graph(self, used_mem, free_mem):
-
-        ticks = ["used", "free"]
-        x2dict = dict(enumerate(ticks))
-        y1 = [used_mem, free_mem]
-        x1 = np.arange(len(ticks))
-        self.process_mem_graph.getAxis('bottom').setTicks([x2dict.items()])
+    def update_mem_graph(self, used_mem, free_mem, used_swap):
+        ticks = ["used", "free", "swap"]
+        xdict = dict(enumerate(ticks))
+        y1 = [used_mem, free_mem, used_swap]
+        x1 = np.arange(3)
+        self.process_mem_graph.getAxis('bottom').setTicks([xdict.items()])
         self.process_mem_graph.setLabel('left', '<span style="color: white">Memory</span>', units='%')
-        self.process_mem_graph.setYRange(0, 100, padding=0)
-        self.process_mem_graph.setXRange(0, len(ticks), padding=0.2)
+        self.process_mem_graph.setYRange(0, 100, padding=0.1)
+        self.process_mem_graph.setXRange(0, 3, padding=0.2)
         p1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
         self.process_mem_graph.addItem(p1)
-
-
 
     def mem_usage_graph(self):
         import mem_stats
