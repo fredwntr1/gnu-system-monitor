@@ -23,7 +23,11 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.net_worker = net_worker.NetProcessWorker()
         self.cpu_table = cpu_worker.CpuTable()
         self.mem_graph_worker = mem_worker.MemGraphWorker()
+        self.cpu_timer = pg.QtCore.QTimer()
+        self.mem_timer = pg.QtCore.QTimer()
         self.mem_graph_worker.start()
+        self.cpu_timer.start(3000)
+        self.mem_timer.start(3000)
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
         self.cpu_graph_worker.start()
         self.cpu_table.start()
@@ -40,6 +44,8 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.connect(self.cpu_table, QtCore.SIGNAL("CPU_TABLE"), self.update_cpu_table)
         self.connect(self.mem_graph_worker, QtCore.SIGNAL("UPDATE_MEM_GRAPH"), self.update_mem_graph)
         self.connect(self.cpu_graph_worker, QtCore.SIGNAL("CPU_GRAPH"), self.update_cpu_graph)
+        self.cpu_timer.timeout.connect(self.refresh_graph_cpu)
+        self.mem_timer.timeout.connect(self.refresh_graph_mem)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
         self.net_limit_pushbutton.setEnabled(False)
@@ -57,6 +63,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_clock_sliderbar.setEnabled(False)
         self.gpu_mem_sliderbar.setEnabled(False)
         self.gpu_fan_slider.setEnabled(False)
+        self.cpu_graph_widget.update()
 
     def update_cpu_graph(self, core_count, cpu_load):
         cores = []
@@ -69,11 +76,16 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_graph_widget.getAxis('bottom').setTicks([x2dict.items()])
         x1 = np.arange(len(cores))
         y1 = flload.tolist()
+      #  print(x1)
         self.cpu_graph_widget.setLabel('left', '<span style="color: white">Cpu Load</span>', units='%')
         self.cpu_graph_widget.setXRange(0, len(cores), padding=0.1)
-        self.cpu_graph_widget.setYRange(0, 100, padding=0)
-        c1 = pg.BarGraphItem(x=x1, height=y1, width=0.2)
+        self.cpu_graph_widget.setYRange(0, 100, padding=0.1)
+        c1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
         self.cpu_graph_widget.addItem(c1)
+        self.cpu_graph_widget.setAntialiasing(aa=8)
+
+    def refresh_graph_cpu(self):
+        self.cpu_graph_widget.clear()
 
     def update_mem_graph(self, used_mem, free_mem, used_swap):
         ticks = ["used", "free", "swap"]
@@ -87,12 +99,9 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         p1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
         self.process_mem_graph.addItem(p1)
 
-    def mem_usage_graph(self):
-        import mem_stats
-        free_mem_plot = mem_stats.free_mem()
-        while True:
-            self.process_mem_graph.plotItem(free_mem_plot)
-            time.sleep(2)
+    def refresh_graph_mem(self):
+        self.process_mem_graph.clear()
+
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
@@ -268,5 +277,6 @@ if __name__ == '__main__':
     a = QtGui.QApplication(sys.argv)
     app = MainClass()
     app.show()
+    a.processEvents()
     sys.exit(a.exec_())
 

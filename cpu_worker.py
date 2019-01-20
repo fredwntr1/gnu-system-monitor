@@ -30,6 +30,7 @@ class CpuTable(QtCore.QThread):
 
 
 class CpuGraphWorker(QtCore.QThread):
+
     def __init__(self):
         super(CpuGraphWorker, self).__init__()
 

@@ -1,7 +1,6 @@
 import time
 from PyQt4 import QtCore
 import mem_stats
-import os
 
 
 class MemStats(QtCore.QThread):
