@@ -25,9 +25,11 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.mem_graph_worker = mem_worker.MemGraphWorker()
         self.cpu_timer = pg.QtCore.QTimer()
         self.mem_timer = pg.QtCore.QTimer()
+        self.gpu_timer = pg.QtCore.QTimer()
         self.mem_graph_worker.start()
         self.cpu_timer.start(3000)
         self.mem_timer.start(3000)
+        self.gpu_timer.start(3000)
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
         self.cpu_graph_worker.start()
         self.cpu_table.start()
@@ -46,6 +48,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.connect(self.cpu_graph_worker, QtCore.SIGNAL("CPU_GRAPH"), self.update_cpu_graph)
         self.cpu_timer.timeout.connect(self.refresh_graph_cpu)
         self.mem_timer.timeout.connect(self.refresh_graph_mem)
+        self.gpu_timer.timeout.connect(self.set_gpu_fancurve)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
         self.net_limit_pushbutton.setEnabled(False)
@@ -64,6 +67,14 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_mem_sliderbar.setEnabled(False)
         self.gpu_fan_slider.setEnabled(False)
         self.cpu_graph_widget.update()
+        self.gpu_graph_widget.setEnabled(False)
+        self.gpu_fcurve_checkbox.toggled.connect(self.enable_gpu_fancurve)
+        self.p1 = pg.PolyLineROI([0, 0], closed=False, invertible=False, removable=True)
+        self.gpu_graph_widget.addItem(self.p1)
+        self.p1.sigRegionChanged.connect(self.set_gpu_fancurve)
+        self.gpu_graph_widget.setMouseEnabled(x=False, y=False)
+        self.process_mem_graph.setMouseEnabled(x=False, y=False)
+        self.cpu_graph_widget.setMouseEnabled(x=False, y=False)
 
     def update_cpu_graph(self, core_count, cpu_load):
         cores = []
@@ -76,13 +87,12 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_graph_widget.getAxis('bottom').setTicks([x2dict.items()])
         x1 = np.arange(len(cores))
         y1 = flload.tolist()
-      #  print(x1)
         self.cpu_graph_widget.setLabel('left', '<span style="color: white">Cpu Load</span>', units='%')
         self.cpu_graph_widget.setXRange(0, len(cores), padding=0.1)
-        self.cpu_graph_widget.setYRange(0, 100, padding=0.1)
+        self.cpu_graph_widget.setYRange(0, 100, padding=0)
+        self.cpu_graph_widget.showGrid(x=True, y=True, alpha=0.3)
         c1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
         self.cpu_graph_widget.addItem(c1)
-        self.cpu_graph_widget.setAntialiasing(aa=8)
 
     def refresh_graph_cpu(self):
         self.cpu_graph_widget.clear()
@@ -94,14 +104,15 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         x1 = np.arange(3)
         self.process_mem_graph.getAxis('bottom').setTicks([xdict.items()])
         self.process_mem_graph.setLabel('left', '<span style="color: white">Memory</span>', units='%')
-        self.process_mem_graph.setYRange(0, 100, padding=0.1)
-        self.process_mem_graph.setXRange(0, 3, padding=0.2)
+        self.process_mem_graph.setYRange(0, 100, padding=0)
+        self.process_mem_graph.setXRange(0, 3, padding=0.1)
+        self.process_mem_graph.showGrid(x=True, y=True, alpha=0.3)
         p1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
         self.process_mem_graph.addItem(p1)
 
     def refresh_graph_mem(self):
         self.process_mem_graph.clear()
-
+#
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
@@ -142,13 +153,13 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
 
     def show_gpu_stats(self, nvidia_temp, nvidia_mem, nvidia_clock, nvidia_watts, nvidia_fan):
         self.gpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.gpu_temp_label.setText(" %d C" % nvidia_temp)
+        self.gpu_temp_label.setText(" %dc" % nvidia_temp)
         self.gpu_mem_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.gpu_mem_label.setText("%d" % nvidia_mem)
         self.gpu_clock_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.gpu_clock_label.setText("%d" % nvidia_clock)
         self.gpu_watts_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.gpu_watts_label.setText("%d W" % nvidia_watts)
+        self.gpu_watts_label.setText("%dw" % nvidia_watts)
         self.gpu_fan_progressbar.setValue(nvidia_fan)
 
     def update_cpu_table(self, cpu_freq, core_count, cpu_percent):
@@ -188,10 +199,12 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         if self.gpu_cfan_checkbox.isChecked():
             subprocess.check_output(manual, shell=True)
             self.gpu_fan_slider.setEnabled(True)
+            self.gpu_fcurve_checkbox.setEnabled(False)
         else:
             self.gpu_fan_slider.setValue(0)
             subprocess.check_output(auto, shell=True)
             self.gpu_fan_slider.setEnabled(False)
+            self.gpu_fcurve_checkbox.setEnabled(True)
 
     def oc_performance_level(self):
 
@@ -272,11 +285,40 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             clear = subprocess.check_output(clear_watts_oc, shell=True)
             return clear
 
+    def enable_gpu_fancurve(self):
+        cancel = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
+        enable = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
+        if self.gpu_fcurve_checkbox.isChecked():
+            man_enable = subprocess.check_output(enable, shell=True)
+            self.gpu_graph_widget.setEnabled(True)
+            self.gpu_cfan_checkbox.setEnabled(False)
+            return man_enable
+        elif self.gpu_fcurve_checkbox.checkState() != QtCore.Qt.Checked:
+            man_disable = subprocess.check_output(cancel, shell=True)
+            self.gpu_graph_widget.setEnabled(False)
+            self.gpu_cfan_checkbox.setEnabled(True)
+            return man_disable
+
+    def set_gpu_fancurve(self):
+        import nvidia_gpu_stats
+        nv_temp = nvidia_gpu_stats.nvidia_temp()
+        self.gpu_graph_widget.setMouseTracking(False)
+        points = self.p1.getLocalHandlePositions()
+        tval = np.around([p[1].x() for p in points])
+        pval = np.around(([p[1].y() for p in points]))
+        fan_percent = list(map(int, pval))
+        temp = list(map(int, tval))
+        match_temp = min(temp, key=lambda x:abs(x-nv_temp))
+        match_percent = temp.index(match_temp)
+        if nv_temp >= match_temp:
+            set_fan = fan_percent[match_percent]
+            speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % set_fan
+            subprocess.check_output(speed, shell=True)
+
 
 if __name__ == '__main__':
     a = QtGui.QApplication(sys.argv)
     app = MainClass()
     app.show()
-    a.processEvents()
     sys.exit(a.exec_())
 
