@@ -9,7 +9,6 @@ import cpu_worker
 import gpu_worker
 import net_worker
 import subprocess
-import time
 
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
@@ -71,10 +70,17 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_fcurve_checkbox.toggled.connect(self.enable_gpu_fancurve)
         self.p1 = pg.PolyLineROI([0, 0], closed=False, invertible=False, removable=True)
         self.gpu_graph_widget.addItem(self.p1)
-        self.p1.sigRegionChanged.connect(self.set_gpu_fancurve)
+        self.tab_widget.currentChanged.connect(self.set_gpu_tab)
         self.gpu_graph_widget.setMouseEnabled(x=False, y=False)
         self.process_mem_graph.setMouseEnabled(x=False, y=False)
         self.cpu_graph_widget.setMouseEnabled(x=False, y=False)
+
+    def set_gpu_tab(self):
+        gpu_vendor = "glxinfo | grep 'OpenGL vendor string:'"
+        find_gpu_vendor = subprocess.check_output(gpu_vendor, shell=True, universal_newlines=True).strip()
+        show_gpu_vendor = repr(find_gpu_vendor)
+        if show_gpu_vendor == repr("OpenGL vendor string: Intel Open Source Technology Center"):
+            self.tab_widget.setTabEnabled(2, False)
 
     def update_cpu_graph(self, core_count, cpu_load):
         cores = []
@@ -304,20 +310,26 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             return man_disable
 
     def set_gpu_fancurve(self):
-        import nvidia_gpu_stats
-        nv_temp = nvidia_gpu_stats.nvidia_temp()
         self.gpu_graph_widget.setMouseTracking(False)
         points = self.p1.getLocalHandlePositions()
         tval = np.around([p[1].x() for p in points])
         pval = np.around(([p[1].y() for p in points]))
         fan_percent = list(map(int, pval))
         temp = list(map(int, tval))
-        match_temp = min(temp, key=lambda x:abs(x-nv_temp))
-        match_percent = temp.index(match_temp)
-        if nv_temp >= match_temp:
-            set_fan = fan_percent[match_percent]
-            speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % set_fan
-            subprocess.check_output(speed, shell=True)
+        gpu_type = "glxinfo | grep 'OpenGL vendor string:'"
+        find_gpu_vendor = subprocess.check_output(gpu_type, shell=True, universal_newlines=True).strip()
+        show_gpu_vendor = repr(find_gpu_vendor)
+        if show_gpu_vendor == repr('OpenGL vendor string: NVIDIA Corporation'):
+            import nvidia_gpu_stats
+            gpu_temp = nvidia_gpu_stats.nvidia_temp()
+            match_temp = min(temp, key=lambda x: abs(x - gpu_temp))
+            match_percent = temp.index(match_temp)
+            if gpu_temp >= match_temp:
+                set_fan = fan_percent[match_percent]
+                speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % set_fan
+                subprocess.check_output(speed, shell=True)
+        else:
+            gpu_temp = None
 
 
 if __name__ == '__main__':
