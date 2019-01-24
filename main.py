@@ -225,8 +225,12 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             self.gpu_mem_sliderbar.setEnabled(False)
         if self.gpu_adaptive_radio.isChecked():
             self.gpu_performance_radio.setChecked(False)
+            adaptive = "nvidia-settings -a [gpu:0]/GPUPowerMizerMode=0"
+            subprocess.check_output(adaptive, shell=True)
         elif self.gpu_performance_radio.isChecked():
             self.gpu_adaptive_radio.setChecked(False)
+            performance = "nvidia-settings -a [gpu:0]/GPUPowerMizerMode=1"
+            subprocess.check_output(performance, shell=True)
 
     def enable_gpu_mem_overclock(self):
         adaptive = 2
