@@ -319,17 +319,20 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         gpu_type = "glxinfo | grep 'OpenGL vendor string:'"
         find_gpu_vendor = subprocess.check_output(gpu_type, shell=True, universal_newlines=True).strip()
         show_gpu_vendor = repr(find_gpu_vendor)
-        if show_gpu_vendor == repr('OpenGL vendor string: NVIDIA Corporation'):
-            import nvidia_gpu_stats
-            gpu_temp = nvidia_gpu_stats.nvidia_temp()
-            match_temp = min(temp, key=lambda x: abs(x - gpu_temp))
-            match_percent = temp.index(match_temp)
-            if gpu_temp >= match_temp:
-                set_fan = fan_percent[match_percent]
-                speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % set_fan
-                subprocess.check_output(speed, shell=True)
-        else:
-            gpu_temp = None
+        if self.gpu_fcurve_checkbox.checkState() == QtCore.Qt.Checked:
+            if show_gpu_vendor == repr('OpenGL vendor string: NVIDIA Corporation'):
+                import nvidia_gpu_stats
+                gpu_temp = nvidia_gpu_stats.nvidia_temp()
+                match_temp = min(temp, key=lambda x: abs(x - gpu_temp))
+                match_percent = temp.index(match_temp)
+                if gpu_temp >= match_temp:
+                    set_fan = fan_percent[match_percent]
+                    speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % set_fan
+                    subprocess.check_output(speed, shell=True)
+            else:
+                pass
+        elif self.gpu_fcurve_checkbox.checkState() != QtCore.Qt.Checked:
+            pass
 
 
 if __name__ == '__main__':
