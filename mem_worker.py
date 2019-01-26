@@ -14,7 +14,7 @@ class MemStats(QtCore.QThread):
             total_swap_mem = mem_stats.total_swap_mem()
             used_swap_mem = mem_stats.used_swap_mem()
             self.emit(QtCore.SIGNAL("MEM_STATS"), free_mem, total_mem, total_swap_mem, used_swap_mem)
-            time.sleep(3)
+            time.sleep(2)
             QtCore.QCoreApplication.processEvents()
 
 
@@ -30,7 +30,7 @@ class MemProcessTableWorker(QtCore.QThread):
             mem_percent = mem_stats.proc_mem_percent()
             mem_pid = mem_stats.proc_pids()
             self.emit(QtCore.SIGNAL('UPDATE_MEM_PROCS'), pid_table, proc_username, process_percent, mem_percent, mem_pid)
-            time.sleep(3)
+            time.sleep(2)
             QtCore.QCoreApplication.processEvents()
 
 
@@ -44,7 +44,7 @@ class MemGraphWorker(QtCore.QThread):
             free_mem = mem_stats.free_mem_percent()
             used_swap = mem_stats.swap_percent()
             self.emit(QtCore.SIGNAL('UPDATE_MEM_GRAPH'), used_mem, free_mem, used_swap)
-            time.sleep(3)
+            time.sleep(2)
             QtCore.QCoreApplication.processEvents()
           
 

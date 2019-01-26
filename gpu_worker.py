@@ -23,7 +23,7 @@ class GpuStats(QtCore.QThread):
                 time.sleep(1)
             elif show_gpu_vendor == repr('OpenGL vendor string: AMD'):
                 temp = None
-                time.sleep(3)
+                time.sleep(1)
             QtCore.QCoreApplication.processEvents()
 
 
