@@ -1,5 +1,4 @@
 import subprocess
-import netifaces
 
 
 def net_procs():

@@ -104,6 +104,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
 
     def refresh_graph_cpu(self):
         self.cpu_graph_widget.clear()
+        QtCore.QCoreApplication.processEvents()
 
     def update_mem_graph(self, used_mem, free_mem, used_swap):
         ticks = ["used", "free", "swap"]
@@ -120,6 +121,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
 
     def refresh_graph_mem(self):
         self.process_mem_graph.clear()
+        QtCore.QCoreApplication.processEvents()
 #
 
     def show_net_stats(self, net_processes, net_download, net_upload):
@@ -335,11 +337,13 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
                 pass
         elif self.gpu_fcurve_checkbox.checkState() != QtCore.Qt.Checked:
             pass
+        QtCore.QCoreApplication.processEvents()
 
 
 if __name__ == '__main__':
     a = QtGui.QApplication(sys.argv)
     app = MainClass()
+    a.processEvents()
     app.show()
     sys.exit(a.exec_())
 

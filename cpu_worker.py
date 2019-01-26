@@ -13,7 +13,8 @@ class CpuWorker(QtCore.QThread):
             cpu_percent = cpu_stats.cpu_load_percentage()
             fan = cpu_stats.cpu_fan()
             self.emit(QtCore.SIGNAL("CPU_STATS"), cpu_percent, temp, fan)
-            time.sleep(1)
+            time.sleep(3)
+            QtCore.QCoreApplication.processEvents()
 
 
 class CpuTable(QtCore.QThread):
@@ -26,7 +27,8 @@ class CpuTable(QtCore.QThread):
             cpu_freq = cpu_stats.cpu_clock_speed()
             cpu_percent = cpu_stats.total_cpu_percentage()
             self.emit(QtCore.SIGNAL("CPU_TABLE"), cpu_freq, core_count, cpu_percent)
-            time.sleep(1)
+            time.sleep(3)
+            QtCore.QCoreApplication.processEvents()
 
 
 class CpuGraphWorker(QtCore.QThread):
@@ -39,5 +41,6 @@ class CpuGraphWorker(QtCore.QThread):
             core_count = cpu_stats.list_cpus()
             cpu_load = cpu_stats.total_cpu_percentage()
             self.emit(QtCore.SIGNAL("CPU_GRAPH"), core_count, cpu_load)
-            time.sleep(1)
+            time.sleep(3)
+            QtCore.QCoreApplication.processEvents()
 

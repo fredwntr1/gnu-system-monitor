@@ -13,4 +13,6 @@ class NetProcessWorker(QtCore.QThread):
             net_download = net_stats.net_proc_download()
             net_upload = net_stats.net_proc_upload()
             self.emit(QtCore.SIGNAL("NET_STATS"), net_processes, net_download, net_upload)
-            time.sleep(2)
+            time.sleep(3)
+            QtCore.QCoreApplication.processEvents()
+
