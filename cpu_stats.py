@@ -29,7 +29,13 @@ def total_cpu_percentage():
 def cpu_temp():
     find_cpu = cpuinfo.get_cpu_info()
     find_cpu_model = find_cpu.get("vendor_id")
+    vm_find = "glxinfo | grep 'OpenGL vendor string:'"
+    vm_list = subprocess.check_output(vm_find, shell=True, universal_newlines=True).strip()
+    show_vm = repr(vm_list)
     if find_cpu_model == "AuthenticAMD":
+        if show_vm == repr("OpenGL vendor string: VMware, Inc."):
+            return 0
+
         find_temp = 'sensors | grep Tdie: | cut -c 16-19'
         temp = subprocess.check_output(find_temp, shell=True, universal_newlines=True).strip()
         show_temp = repr(temp)
@@ -40,6 +46,9 @@ def cpu_temp():
             temp = subprocess.check_output(fx_temp, shell=True, universal_newlines=True).strip()
             return temp
     elif find_cpu_model == "GenuineIntel":
+        if show_vm == repr("OpenGL vendor string: VMware, Inc."):
+            return 0
+
         intel_temperatures = "sensors | grep -E 'Core [0-99]' | cut -c 16-19"
         temp = subprocess.check_output(intel_temperatures, shell=True, universal_newlines=True).splitlines()
         temp_ints = np.array(temp)
@@ -51,7 +60,13 @@ def cpu_temp():
 def cpu_fan():
     find_cpu = cpuinfo.get_cpu_info()
     find_cpu_model = find_cpu.get("vendor_id")
+    vm_find = "glxinfo | grep 'OpenGL vendor string:'"
+    vm_list = subprocess.check_output(vm_find, shell=True, universal_newlines=True).strip()
+    show_vm = repr(vm_list)
     if find_cpu_model == "AuthenticAMD":
+        if show_vm == repr("OpenGL vendor string: VMware, Inc."):
+            return 0
+
         fan = 'sensors | grep -m 1 fan | cut -c 24-28'
         pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).strip()
         show_cpu_fan = int(pass_cpu_fan)
