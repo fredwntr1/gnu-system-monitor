@@ -1,7 +1,7 @@
 import psutil
 import subprocess
 import numpy as np
-
+import cpuinfo
 
 def list_cpus():
     total_cpu = psutil.cpu_count(logical=True)
@@ -27,10 +27,9 @@ def total_cpu_percentage():
 
 
 def cpu_temp():
-    find_cpu = "lscpu | grep 'Model name:' | cut -c 22-24"
-    find_cpu_model = subprocess.check_output(find_cpu, shell=True, universal_newlines=True).strip()
-    show_cpu_model = repr(find_cpu_model)
-    if show_cpu_model == repr('AMD'):
+    find_cpu = cpuinfo.get_cpu_info()
+    find_cpu_model = find_cpu.get("vendor_id")
+    if find_cpu_model == "AuthenticAMD":
         find_temp = 'sensors | grep Tdie: | cut -c 16-19'
         temp = subprocess.check_output(find_temp, shell=True, universal_newlines=True).strip()
         show_temp = repr(temp)
@@ -40,7 +39,7 @@ def cpu_temp():
             fx_temp = 'sensors | grep temp1: | cut -c 16-19'
             temp = subprocess.check_output(fx_temp, shell=True, universal_newlines=True).strip()
             return temp
-    elif show_cpu_model == repr('Int'):
+    elif find_cpu_model == "GenuineIntel":
         intel_temperatures = "sensors | grep -E 'Core [0-99]' | cut -c 16-19"
         temp = subprocess.check_output(intel_temperatures, shell=True, universal_newlines=True).splitlines()
         temp_ints = np.array(temp)
@@ -50,15 +49,14 @@ def cpu_temp():
 
 
 def cpu_fan():
-    find_cpu = "lscpu | grep 'Model name:' | cut -c 22-24"
-    find_cpu_model = subprocess.check_output(find_cpu, shell=True, universal_newlines=True).strip()
-    show_cpu_model = repr(find_cpu_model)
-    if show_cpu_model == repr('AMD'):
+    find_cpu = cpuinfo.get_cpu_info()
+    find_cpu_model = find_cpu.get("vendor_id")
+    if find_cpu_model == "AuthenticAMD":
         fan = 'sensors | grep -m 1 fan | cut -c 24-28'
         pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).strip()
         show_cpu_fan = int(pass_cpu_fan)
         return show_cpu_fan
-    elif show_cpu_model == repr('Int'):
+    elif find_cpu_model == "GenuineIntel":
         return 0
 
 
