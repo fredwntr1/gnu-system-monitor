@@ -1,0 +1,10 @@
+[Unit]
+Description=Allow access to kernel debug folder for amdgpu stats
+RequiresMountsFor=/sys/kernel
+
+[Service]
+User=root
+ExecStart=/bin/amdst
+
+[Install]
+WantedBy=multi-user.target

@@ -48,6 +48,7 @@ def cpu_temp():
     elif find_cpu_model == "GenuineIntel":
         if show_vm == repr("OpenGL vendor string: VMware, Inc."):
             return 0
+        find_temp = 'sensors'
 
         intel_temperatures = "sensors | grep -E 'Core [0-99]' | cut -c 16-19"
         temp = subprocess.check_output(intel_temperatures, shell=True, universal_newlines=True).splitlines()
@@ -67,11 +68,19 @@ def cpu_fan():
         if show_vm == repr("OpenGL vendor string: VMware, Inc."):
             return 0
 
-        fan = 'sensors | grep -m 1 fan | cut -c 24-28'
+        fan = "sensors | grep -m 1 fan | awk '{print $2}'"
         pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).strip()
         show_cpu_fan = int(pass_cpu_fan)
         return show_cpu_fan
     elif find_cpu_model == "GenuineIntel":
-        return 0
+        if show_vm == repr("OpenGL vendor string: VMware, Inc."):
+            return 0
+        fan = "sensors | grep fan | awk '{print $2}'"
+        pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).splitlines()
+        fan_values = np.array(pass_cpu_fan)
+        if fan_values[0] == 0:
+            return fan_values[1]
 
 
+
+cpu_fan()

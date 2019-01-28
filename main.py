@@ -27,7 +27,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_timer = pg.QtCore.QTimer()
         self.mem_graph_worker.start()
         self.cpu_timer.start(3000)
-        self.mem_timer.start(3000)
+        self.mem_timer.start(10000)
         self.gpu_timer.start(3000)
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
         self.cpu_graph_worker.start()
