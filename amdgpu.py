@@ -1,5 +1,6 @@
 import subprocess
 
+
 def amdgpu_temp():
     temp_query = "cat /sys/kernel/debug/dri/0/amdgpu_pm_info | grep Temperature | awk '{print $3}'"
     temp = subprocess.check_output(temp_query, shell=True)
@@ -13,11 +14,13 @@ def amdgpu_mem_speed():
     mem = int(mem)
     return mem
 
+
 def amdgpu_clock_speed():
     clock_speed_query =  "cat /sys/kernel/debug/dri/0/amdgpu_pm_info | grep -m 1 SCLK | awk '{print $1}'"
     clock = subprocess.check_output(clock_speed_query, shell=True)
     clock = int(clock)
     return clock
+
 
 def amdgpu_watts():
     watts_query = "cat /sys/kernel/debug/dri/0/amdgpu_pm_info | grep -m 1 'W (average ' | awk '{print $1}'"
@@ -25,6 +28,7 @@ def amdgpu_watts():
     watts = float(watts)
     int(watts)
     return watts
+
 
 def amdgpu_fan():
     fan_speed = "cat /sys/class/drm/card0/device/hwmon/hwmon0/pwm1"

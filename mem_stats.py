@@ -65,6 +65,7 @@ def free_mem_percent():
     free = psutil.virtual_memory()
     return free.free / free.total * 100
 
+
 def swap_percent():
     used = psutil.swap_memory()
     return used.used / used.total * 100

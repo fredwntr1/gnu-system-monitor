@@ -25,12 +25,10 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_fancurve = gpu_worker.GpuFanCurve()
         self.cpu_timer = pg.QtCore.QTimer()
         self.mem_timer = pg.QtCore.QTimer()
-        self.gpu_timer = pg.QtCore.QTimer()
         self.man_fan = pg.QtCore.QTimer()
         self.mem_graph_worker.start()
         self.cpu_timer.start(3000)
         self.mem_timer.start(10000)
-        self.gpu_timer.start(0)
         self.man_fan.start()
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
         self.cpu_graph_worker.start()
@@ -126,7 +124,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
     def refresh_graph_mem(self):
         self.process_mem_graph.clear()
         QtCore.QCoreApplication.processEvents()
-
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
@@ -357,8 +354,9 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
                 if gpu_temp >= match_temp:
                     subprocess.check_output(speed, shell=True)
             elif show_gpu_vendor == repr('GeForce'):
-                speed = speed % set_fan
-                subprocess.check_output(speed, shell=True)
+                if gpu_temp >= match_temp:
+                    speed = speed % set_fan
+                    subprocess.check_output(speed, shell=True)
 
         elif self.gpu_fcurve_checkbox.checkState() != QtCore.Qt.Checked:
             pass
