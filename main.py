@@ -22,13 +22,16 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.net_worker = net_worker.NetProcessWorker()
         self.cpu_table = cpu_worker.CpuTable()
         self.mem_graph_worker = mem_worker.MemGraphWorker()
+        self.gpu_fancurve = gpu_worker.GpuFanCurve()
         self.cpu_timer = pg.QtCore.QTimer()
         self.mem_timer = pg.QtCore.QTimer()
         self.gpu_timer = pg.QtCore.QTimer()
+        self.man_fan = pg.QtCore.QTimer()
         self.mem_graph_worker.start()
         self.cpu_timer.start(3000)
         self.mem_timer.start(10000)
-        self.gpu_timer.start(3000)
+        self.gpu_timer.start(0)
+        self.man_fan.start()
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
         self.cpu_graph_worker.start()
         self.cpu_table.start()
@@ -37,6 +40,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_stats.start()
         self.mem_table.start()
         self.net_worker.start()
+        self.gpu_fancurve.start()
         self.connect(self.mem_stats, QtCore.SIGNAL("MEM_STATS"), self.show_mem_stats)
         self.connect(self.cpu_worker, QtCore.SIGNAL("CPU_STATS"), self.show_cpu_stats)
         self.connect(self.gpu_stats, QtCore.SIGNAL("GPU_STATS"), self.show_gpu_stats)
@@ -45,14 +49,14 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.connect(self.cpu_table, QtCore.SIGNAL("CPU_TABLE"), self.update_cpu_table)
         self.connect(self.mem_graph_worker, QtCore.SIGNAL("UPDATE_MEM_GRAPH"), self.update_mem_graph)
         self.connect(self.cpu_graph_worker, QtCore.SIGNAL("CPU_GRAPH"), self.update_cpu_graph)
+        self.connect(self.gpu_fancurve, QtCore.SIGNAL("GPU_FANCURVE"), self.set_gpu_fancurve)
         self.cpu_timer.timeout.connect(self.refresh_graph_cpu)
         self.mem_timer.timeout.connect(self.refresh_graph_mem)
-        self.gpu_timer.timeout.connect(self.set_gpu_fancurve)
+        self.gpu_cfan_checkbox.toggled.connect(self.enable_manual_fanspeed)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
         self.net_limit_pushbutton.setEnabled(False)
         self.gpu_fan_slider.valueChanged.connect(self.change_fan_speed)
-        self.gpu_cfan_checkbox.toggled.connect(self.enable_manual_fanspeed)
         self.gpu_oc_checkbox.toggled.connect(self.oc_performance_level)
         self.gpu_performance_radio.toggled.connect(self.oc_performance_level)
         self.gpu_adaptive_radio.toggled.connect(self.oc_performance_level)
@@ -122,7 +126,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
     def refresh_graph_mem(self):
         self.process_mem_graph.clear()
         QtCore.QCoreApplication.processEvents()
-#
+
 
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
@@ -161,16 +165,16 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_load_progressbar.setValue(cpu_percent)
         self.cpu_temp_label.setText("   %s C" % temp)
 
-    def show_gpu_stats(self, nvidia_temp, nvidia_mem, nvidia_clock, nvidia_watts, nvidia_fan):
+    def show_gpu_stats(self, temp, mem, clock, watts, fan):
         self.gpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.gpu_temp_label.setText(" %dc" % nvidia_temp)
+        self.gpu_temp_label.setText(" %dc" % temp)
         self.gpu_mem_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.gpu_mem_label.setText("%d" % nvidia_mem)
+        self.gpu_mem_label.setText("%d" % mem)
         self.gpu_clock_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.gpu_clock_label.setText("%d" % nvidia_clock)
+        self.gpu_clock_label.setText("%d" % clock)
         self.gpu_watts_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.gpu_watts_label.setText("%dw" % nvidia_watts)
-        self.gpu_fan_progressbar.setValue(nvidia_fan)
+        self.gpu_watts_label.setText("%dw" % watts)
+        self.gpu_fan_progressbar.setValue(fan)
 
     def update_cpu_table(self, cpu_freq, core_count, cpu_percent):
         self.cpu_table_widget.setColumnCount(core_count)
@@ -196,28 +200,65 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         subprocess.check_output(killall, shell=True)
 
     def change_fan_speed(self):
+        import amdgpu
+        max_amdgpu = amdgpu.amdgpu_fan_max()
         self.gpu_fan_slider.setMinimum(0)
-        self.gpu_fan_slider.setMaximum(100)
         fanspeed = self.gpu_fan_slider.value()
-        speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % fanspeed
-        set_speed = subprocess.check_output(speed, shell=True)
-        return set_speed
+        gpu_type = "glxinfo | grep 'renderer string:' | awk '{print $4}'"
+        find_gpu_vendor = subprocess.check_output(gpu_type, shell=True, universal_newlines=True).strip()
+        show_gpu_vendor = repr(find_gpu_vendor)
+        if show_gpu_vendor == repr('AMD'):
+            self.gpu_fan_slider.setMaximum(max_amdgpu)
+            speed = "echo %d > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1" % fanspeed
+            set_speed = subprocess.check_output(speed, shell=True)
+            return set_speed
+        elif show_gpu_vendor == repr('GeForce'):
+            self.gpu_fan_slider.setMaximum(100)
+            speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % fanspeed
+            set_speed = subprocess.check_output(speed, shell=True)
+            return set_speed
+
+    def enable_gpu_fancurve(self):
+        enable = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
+        cancel = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
+        amd_enable = "echo 1 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
+        amd_cancel = "echo 2 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
+        if self.gpu_fcurve_checkbox.isChecked():
+            try:
+                subprocess.check_output(enable, shell=True)
+            except:
+                  subprocess.check_output(amd_enable, shell=True)
+            self.gpu_graph_widget.setEnabled(True)
+            self.gpu_cfan_checkbox.setEnabled(False)
+        else:
+            try:
+                subprocess.check_output(cancel, shell=True)
+            except:
+                subprocess.check_output(amd_cancel, shell=True)
+            self.gpu_graph_widget.setEnabled(False)
+            self.gpu_cfan_checkbox.setEnabled(True)
 
     def enable_manual_fanspeed(self):
         manual = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
         auto = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
+        amd_manual = "echo 1 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
+        amd_auto = "echo 2 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
         if self.gpu_cfan_checkbox.isChecked():
-            subprocess.check_output(manual, shell=True)
+            try:
+                subprocess.check_output(manual, shell=True)
+            except:
+                subprocess.check_output(amd_manual, shell=True)
             self.gpu_fan_slider.setEnabled(True)
             self.gpu_fcurve_checkbox.setEnabled(False)
         else:
-            self.gpu_fan_slider.setValue(0)
-            subprocess.check_output(auto, shell=True)
+            try:
+                subprocess.check_output(auto, shell=True)
+            except:
+                subprocess.check_output(amd_auto, shell=True)
             self.gpu_fan_slider.setEnabled(False)
             self.gpu_fcurve_checkbox.setEnabled(True)
 
     def oc_performance_level(self):
-
         if self.gpu_oc_checkbox.checkState() == QtCore.Qt.Checked:
             self.gpu_mem_sliderbar.setEnabled(True)
             self.gpu_clock_sliderbar.setEnabled(True)
@@ -299,45 +340,28 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             clear = subprocess.check_output(clear_watts_oc, shell=True)
             return clear
 
-    def enable_gpu_fancurve(self):
-        cancel = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
-        enable = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
-        if self.gpu_fcurve_checkbox.isChecked():
-            man_enable = subprocess.check_output(enable, shell=True)
-            self.gpu_graph_widget.setEnabled(True)
-            self.gpu_cfan_checkbox.setEnabled(False)
-            return man_enable
-        elif self.gpu_fcurve_checkbox.checkState() != QtCore.Qt.Checked:
-            man_disable = subprocess.check_output(cancel, shell=True)
-            self.gpu_graph_widget.setEnabled(False)
-            self.gpu_cfan_checkbox.setEnabled(True)
-            return man_disable
-
-    def set_gpu_fancurve(self):
+    def set_gpu_fancurve(self, gpu_temp, speed, show_gpu_vendor, max_fan):
         self.gpu_graph_widget.setMouseTracking(False)
         points = self.p1.getLocalHandlePositions()
         tval = np.around([p[1].x() for p in points])
         pval = np.around(([p[1].y() for p in points]))
         fan_percent = list(map(int, pval))
         temp = list(map(int, tval))
-        gpu_type = "glxinfo | grep 'OpenGL vendor string:'"
-        find_gpu_vendor = subprocess.check_output(gpu_type, shell=True, universal_newlines=True).strip()
-        show_gpu_vendor = repr(find_gpu_vendor)
+        match_temp = min(temp, key=lambda x: abs(x - gpu_temp))
+        match_percent = temp.index(match_temp)
+        set_fan = fan_percent[match_percent]
+
         if self.gpu_fcurve_checkbox.checkState() == QtCore.Qt.Checked:
-            if show_gpu_vendor == repr('OpenGL vendor string: NVIDIA Corporation'):
-                import nvidia_gpu_stats
-                gpu_temp = nvidia_gpu_stats.nvidia_temp()
-                match_temp = min(temp, key=lambda x: abs(x - gpu_temp))
-                match_percent = temp.index(match_temp)
+            if show_gpu_vendor == repr('AMD'):
+                speed = speed % (max_fan * set_fan / 100)
                 if gpu_temp >= match_temp:
-                    set_fan = fan_percent[match_percent]
-                    speed = "nvidia-settings -a [fan-0]/GPUTargetFanSpeed=%d" % set_fan
                     subprocess.check_output(speed, shell=True)
-            else:
-                pass
+            elif show_gpu_vendor == repr('GeForce'):
+                speed = speed % set_fan
+                subprocess.check_output(speed, shell=True)
+
         elif self.gpu_fcurve_checkbox.checkState() != QtCore.Qt.Checked:
             pass
-        QtCore.QCoreApplication.processEvents()
 
 
 if __name__ == '__main__':
