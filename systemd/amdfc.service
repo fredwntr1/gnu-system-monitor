@@ -4,7 +4,7 @@ RequiresMountsFor=/sys/class/drm
 
 [Service]
 User=root
-ExecStart=/bin/bash -c "/bin/chmod a+w /sys/class/drm/card0/device/hwmon/hwmon0/*"
+ExecStart=/bin/bash -c "/bin/amdfc.py"
 
 [Install]
 WantedBy=multi-user.target

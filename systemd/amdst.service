@@ -4,7 +4,7 @@ RequiresMountsFor=/sys/kernel
 
 [Service]
 User=root
-ExecStart=/bin/amdst
+ExecStart=/bin/bash -c "/bin/amdst.py"
 
 [Install]
 WantedBy=multi-user.target
