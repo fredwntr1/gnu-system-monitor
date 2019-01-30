@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
 import ui
@@ -9,6 +9,7 @@ import cpu_worker
 import gpu_worker
 import net_worker
 import subprocess
+import amdgpu
 
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
@@ -197,7 +198,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         subprocess.check_output(killall, shell=True)
 
     def change_fan_speed(self):
-        import amdgpu
         max_amdgpu = amdgpu.amdgpu_fan_max()
         self.gpu_fan_slider.setMinimum(0)
         fanspeed = self.gpu_fan_slider.value()
@@ -206,7 +206,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         show_gpu_vendor = repr(find_gpu_vendor)
         if show_gpu_vendor == repr('AMD'):
             self.gpu_fan_slider.setMaximum(max_amdgpu)
-            speed = "echo %d > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1" % fanspeed
+            speed = amdgpu.fan_value() % fanspeed
             set_speed = subprocess.check_output(speed, shell=True)
             return set_speed
         elif show_gpu_vendor == repr('GeForce'):
@@ -218,40 +218,36 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
     def enable_gpu_fancurve(self):
         enable = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
         cancel = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
-        amd_enable = "echo 1 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
-        amd_cancel = "echo 2 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
         if self.gpu_fcurve_checkbox.isChecked():
             try:
                 subprocess.check_output(enable, shell=True)
             except:
-                  subprocess.check_output(amd_enable, shell=True)
+                  subprocess.check_output(amdgpu.enable_manual_fan(), shell=True)
             self.gpu_graph_widget.setEnabled(True)
             self.gpu_cfan_checkbox.setEnabled(False)
         else:
             try:
                 subprocess.check_output(cancel, shell=True)
             except:
-                subprocess.check_output(amd_cancel, shell=True)
+                subprocess.check_output(amdgpu.disable_manual_fan(), shell=True)
             self.gpu_graph_widget.setEnabled(False)
             self.gpu_cfan_checkbox.setEnabled(True)
 
     def enable_manual_fanspeed(self):
         manual = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
         auto = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
-        amd_manual = "echo 1 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
-        amd_auto = "echo 2 > /sys/class/drm/card0/device/hwmon/hwmon0/pwm1_enable"
         if self.gpu_cfan_checkbox.isChecked():
             try:
                 subprocess.check_output(manual, shell=True)
             except:
-                subprocess.check_output(amd_manual, shell=True)
+                subprocess.check_output(amdgpu.enable_manual_fan(), shell=True)
             self.gpu_fan_slider.setEnabled(True)
             self.gpu_fcurve_checkbox.setEnabled(False)
         else:
             try:
                 subprocess.check_output(auto, shell=True)
             except:
-                subprocess.check_output(amd_auto, shell=True)
+                subprocess.check_output(amdgpu.disable_manual_fan(), shell=True)
             self.gpu_fan_slider.setEnabled(False)
             self.gpu_fcurve_checkbox.setEnabled(True)
 
