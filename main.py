@@ -9,7 +9,6 @@ import cpu_worker
 import gpu_worker
 import net_worker
 import subprocess
-import amdgpu
 
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
@@ -27,28 +26,36 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_timer = pg.QtCore.QTimer()
         self.mem_timer = pg.QtCore.QTimer()
         self.man_fan = pg.QtCore.QTimer()
-        self.mem_graph_worker.start()
         self.cpu_timer.start(3000)
         self.mem_timer.start(10000)
         self.man_fan.start()
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
-        self.cpu_graph_worker.start()
-        self.cpu_table.start()
-        self.mem_stats.start()
-        self.cpu_worker.start()
-        self.gpu_stats.start()
-        self.mem_table.start()
-        self.net_worker.start()
-        self.gpu_fancurve.start()
-        self.connect(self.mem_stats, QtCore.SIGNAL("MEM_STATS"), self.show_mem_stats)
-        self.connect(self.cpu_worker, QtCore.SIGNAL("CPU_STATS"), self.show_cpu_stats)
-        self.connect(self.gpu_stats, QtCore.SIGNAL("GPU_STATS"), self.show_gpu_stats)
-        self.connect(self.mem_table, QtCore.SIGNAL('UPDATE_MEM_PROCS'), self.update_process_table)
-        self.connect(self.net_worker, QtCore.SIGNAL("NET_STATS"), self.show_net_stats)
-        self.connect(self.cpu_table, QtCore.SIGNAL("CPU_TABLE"), self.update_cpu_table)
-        self.connect(self.mem_graph_worker, QtCore.SIGNAL("UPDATE_MEM_GRAPH"), self.update_mem_graph)
-        self.connect(self.cpu_graph_worker, QtCore.SIGNAL("CPU_GRAPH"), self.update_cpu_graph)
-        self.connect(self.gpu_fancurve, QtCore.SIGNAL("GPU_FANCURVE"), self.set_gpu_fancurve)
+        self.mem_stat_pool = QtCore.QThreadPool()
+        self.cpu_stat_pool = QtCore.QThreadPool()
+        self.gpu_stat_pool = QtCore.QThreadPool()
+        self.net_stat_pool = QtCore.QThreadPool()
+        self.mem_stat_pool.setMaxThreadCount(3)
+        self.cpu_stat_pool.setMaxThreadCount(3)
+        self.gpu_stat_pool.setMaxThreadCount(2)
+        self.net_stat_pool.setMaxThreadCount(1)
+        self.mem_stat_pool.start(self.mem_stats)
+        self.mem_stat_pool.start(self.mem_table)
+        self.mem_stat_pool.start(self.mem_graph_worker)
+        self.cpu_stat_pool.start(self.cpu_worker)
+        self.cpu_stat_pool.start(self.cpu_graph_worker)
+        self.cpu_stat_pool.start(self.cpu_table)
+        self.gpu_stat_pool.start(self.gpu_stats)
+        self.gpu_stat_pool.start(self.gpu_fancurve)
+        self.net_stat_pool.start(self.net_worker)
+        self.mem_stats.mem_worker_signal.mem_stats_signal.connect(self.show_mem_stats)
+        self.mem_table.mem_worker_signal.mem_table_signal.connect(self.update_process_table)
+        self.mem_graph_worker.mem_worker_signal.mem_graph_signal.connect(self.update_mem_graph)
+        self.cpu_worker.stats_signal.cpu_worker_signal.connect(self.show_cpu_stats)
+        self.cpu_graph_worker.graph_signal.cpu_graph_signal.connect(self.update_cpu_graph)
+        self.cpu_table.table_signal.cpu_table_signal.connect(self.update_cpu_table)
+        self.gpu_stats.stats_signal.gpu_stats_thread.connect(self.show_gpu_stats)
+        self.gpu_fancurve.fcurve_signal.fan_curce_thread.connect(self.set_gpu_fancurve)
+        self.net_worker.net_signal.net_proc_thread.connect(self.show_net_stats)
         self.cpu_timer.timeout.connect(self.refresh_graph_cpu)
         self.mem_timer.timeout.connect(self.refresh_graph_mem)
         self.gpu_cfan_checkbox.toggled.connect(self.enable_manual_fanspeed)
@@ -87,6 +94,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         elif show_gpu_vendor == repr("OpenGL vendor string: VMware, Inc."):
             self.tab_widget.setTabEnabled(2, False)
 
+    @QtCore.pyqtSlot(int, list)
     def update_cpu_graph(self, core_count, cpu_load):
         cores = []
         load = np.array(cpu_load)
@@ -109,6 +117,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_graph_widget.clear()
         QtCore.QCoreApplication.processEvents()
 
+    @QtCore.pyqtSlot(int, int, int)
     def update_mem_graph(self, used_mem, free_mem, used_swap):
         ticks = ["used", "free", "swap"]
         xdict = dict(enumerate(ticks))
@@ -126,6 +135,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.process_mem_graph.clear()
         QtCore.QCoreApplication.processEvents()
 
+    @QtCore.pyqtSlot(list, list, list)
     def show_net_stats(self, net_processes, net_download, net_upload):
         self.net_process_widget.setRowCount(len(net_processes))
         for i, row in enumerate(net_processes):
@@ -135,6 +145,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         for i, row in enumerate(net_upload):
             self.net_process_widget.setItem(i, 2, QtGui.QTableWidgetItem(row))
 
+    @QtCore.pyqtSlot(list, list, list, list, list)
     def update_process_table(self, pid_table, proc_username, process_percent, mem_percent, mem_pid):
         self.process_table_widget.setRowCount(len(pid_table))
         for i, row in enumerate(pid_table):
@@ -148,14 +159,16 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         for i, row in enumerate(mem_pid):
             self.process_table_widget.setItem(i, 4, QtGui.QTableWidgetItem(row))
 
-    def show_mem_stats(self, free_mem, total_mem, used_swap_mem):
+    @QtCore.pyqtSlot(int, int, int)
+    def show_mem_stats(self, free_mem, total_mem, total_swap_mem):
         self.free_mem_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.free_mem_label.setText("   %d" % free_mem)
         self.total_mem_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.total_mem_label.setText("   %d" % total_mem)
         self.swap_mem_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
-        self.swap_mem_label.setText("   %d" % used_swap_mem)
+        self.swap_mem_label.setText("   %d" % total_swap_mem)
 
+    @QtCore.pyqtSlot(int, str, int)
     def show_cpu_stats(self, cpu_percent, temp, fan):
         self.cpu_fan_speed_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.cpu_fan_speed_label.setText("%d RPM" % fan)
@@ -163,6 +176,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_load_progressbar.setValue(cpu_percent)
         self.cpu_temp_label.setText("   %s C" % temp)
 
+    @QtCore.pyqtSlot(int, int, int, int, int)
     def show_gpu_stats(self, temp, mem, clock, watts, fan):
         self.gpu_temp_label.setFont(QtGui.QFont("Ubuntu", 16, QtGui.QFont.Bold))
         self.gpu_temp_label.setText(" %dc" % temp)
@@ -174,6 +188,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_watts_label.setText("%dw" % watts)
         self.gpu_fan_progressbar.setValue(fan)
 
+    @QtCore.pyqtSlot(list, int, list)
     def update_cpu_table(self, cpu_freq, core_count, cpu_percent):
         self.cpu_table_widget.setColumnCount(core_count)
         cpu_list = []
@@ -198,6 +213,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         subprocess.check_output(killall, shell=True)
 
     def change_fan_speed(self):
+        import amdgpu
         max_amdgpu = amdgpu.amdgpu_fan_max()
         self.gpu_fan_slider.setMinimum(0)
         fanspeed = self.gpu_fan_slider.value()
@@ -216,6 +232,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             return set_speed
 
     def enable_gpu_fancurve(self):
+        import amdgpu
         enable = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
         cancel = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
         if self.gpu_fcurve_checkbox.isChecked():
@@ -234,6 +251,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             self.gpu_cfan_checkbox.setEnabled(True)
 
     def enable_manual_fanspeed(self):
+        import amdgpu
         manual = "nvidia-settings -a [gpu:0]/GPUFanControlState=1"
         auto = "nvidia-settings -a [gpu:0]/GPUFanControlState=0"
         if self.gpu_cfan_checkbox.isChecked():
@@ -333,6 +351,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
             clear = subprocess.check_output(clear_watts_oc, shell=True)
             return clear
 
+    @QtCore.pyqtSlot(int, str, str, int)
     def set_gpu_fancurve(self, gpu_temp, speed, show_gpu_vendor, max_fan):
         self.gpu_graph_widget.setMouseTracking(False)
         points = self.p1.getLocalHandlePositions()

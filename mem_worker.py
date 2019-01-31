@@ -3,24 +3,31 @@ from PyQt4 import QtCore
 import mem_stats
 
 
-class MemStats(QtCore.QThread):
+class MemWorkerSignals(QtCore.QObject):
+    mem_stats_signal = QtCore.pyqtSignal(int, int, int)
+    mem_table_signal = QtCore.pyqtSignal(list, list, list, list, list)
+    mem_graph_signal = QtCore.pyqtSignal(int, int, int)
+
+
+class MemStats(QtCore.QRunnable):
     def __init__(self):
         super(MemStats, self).__init__()
+        self.mem_worker_signal = MemWorkerSignals()
 
     def run(self):
         while True:
             free_mem = mem_stats.free_mem()
             total_mem = mem_stats.total_mem()
             total_swap_mem = mem_stats.total_swap_mem()
-            used_swap_mem = mem_stats.used_swap_mem()
-            self.emit(QtCore.SIGNAL("MEM_STATS"), free_mem, total_mem, total_swap_mem, used_swap_mem)
-            time.sleep(2)
+            self.mem_worker_signal.mem_stats_signal.emit(free_mem, total_mem, total_swap_mem)
             QtCore.QCoreApplication.processEvents()
+            time.sleep(2)
 
 
-class MemProcessTableWorker(QtCore.QThread):
+class MemProcessTableWorker(QtCore.QRunnable):
     def __init__(self):
         super(MemProcessTableWorker, self).__init__()
+        self.mem_worker_signal = MemWorkerSignals()
 
     def run(self):
         while True:
@@ -29,23 +36,24 @@ class MemProcessTableWorker(QtCore.QThread):
             process_percent = mem_stats.proc_cpu_percent()
             mem_percent = mem_stats.proc_mem_percent()
             mem_pid = mem_stats.proc_pids()
-            self.emit(QtCore.SIGNAL('UPDATE_MEM_PROCS'), pid_table, proc_username, process_percent, mem_percent, mem_pid)
-            time.sleep(2)
+            self.mem_worker_signal.mem_table_signal.emit(pid_table, proc_username, process_percent, mem_percent, mem_pid)
             QtCore.QCoreApplication.processEvents()
+            time.sleep(2)
 
 
-class MemGraphWorker(QtCore.QThread):
+class MemGraphWorker(QtCore.QRunnable):
     def __init__(self):
         super(MemGraphWorker, self).__init__()
+        self.mem_worker_signal = MemWorkerSignals()
 
     def run(self):
         while True:
             used_mem = mem_stats.used_mem()
             free_mem = mem_stats.free_mem_percent()
             used_swap = mem_stats.swap_percent()
-            self.emit(QtCore.SIGNAL('UPDATE_MEM_GRAPH'), used_mem, free_mem, used_swap)
-            time.sleep(2)
+            self.mem_worker_signal.mem_graph_signal.emit(used_mem, free_mem, used_swap)
             QtCore.QCoreApplication.processEvents()
-          
+            time.sleep(2)
+
 
 
