@@ -50,8 +50,8 @@ def cpu_temp():
         temp_ints = np.array(temp)
         temp_update = temp_ints.astype(np.float)
         np.around(temp_update)
-        return sum(temp_update) / len(temp_update)
-
+        temp =  sum(temp_update) / len(temp_update)
+        return(str(temp))
 
 def cpu_fan():
     find_cpu = cpuinfo.get_cpu_info()
@@ -65,11 +65,12 @@ def cpu_fan():
         show_cpu_fan = int(pass_cpu_fan)
         return show_cpu_fan
     elif find_cpu_model == "GenuineIntel":
-        fan = "sensors | grep fan | awk '{print $2}'"
-        pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).splitlines()
+        fan = "sensors | grep -m 1 fan | awk '{print $2}'"
+        pass_cpu_fan = subprocess.check_output(fan, shell=True, universal_newlines=True).strip()
         fan_values = list(map(int, pass_cpu_fan))
-        print(fan_values)
-        if fan_values[0] == 0:
-            return fan_values[1]
-
+        try:
+            if fan_values[0] == 0:
+                return fan_values[1]
+        except:
+            return 0
 
