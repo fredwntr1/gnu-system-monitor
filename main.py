@@ -91,8 +91,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         show_gpu_vendor = repr(find_gpu_vendor)
         if show_gpu_vendor == repr("OpenGL vendor string: Intel Open Source Technology Center"):
             self.tab_widget.setTabEnabled(2, False)
-        elif show_gpu_vendor == repr("OpenGL vendor string: VMware, Inc."):
-            self.tab_widget.setTabEnabled(2, False)
 
     @QtCore.pyqtSlot(int, list)
     def update_cpu_graph(self, core_count, cpu_load):
