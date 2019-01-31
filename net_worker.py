@@ -7,7 +7,7 @@ class NetThread(QtCore.QObject):
     net_proc_thread = QtCore.pyqtSignal(list, list, list)
 
 
-class NetProcessWorker(QtCore.QRunnable):
+class NetProcessWorker(QtCore.QThread):
     def __init__(self):
         super(NetProcessWorker, self).__init__()
         self.net_signal = NetThread()
