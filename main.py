@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from PyQt4 import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
@@ -9,6 +8,15 @@ import cpu_worker
 import gpu_worker
 import net_worker
 import subprocess
+import sys
+
+
+class TimeAxisItem(pg.AxisItem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def tickStrings(self, values, scale, spacing):
+        return [QtCore.QTime().addMSecs(value).toString('mm:ss') for value in values]
 
 
 class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
@@ -24,11 +32,9 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.mem_graph_worker = mem_worker.MemGraphWorker()
         self.gpu_fancurve = gpu_worker.GpuFanCurve()
         self.cpu_timer = pg.QtCore.QTimer()
-        self.mem_timer = pg.QtCore.QTimer()
-        self.man_fan = pg.QtCore.QTimer()
-        self.cpu_timer.start(3000)
-        self.mem_timer.start(10000)
-        self.man_fan.start()
+        self.cpu_timer.start(2000)
+        self.memtime = pg.QtCore.QTime()
+        self.memtime.start()
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
         self.mem_stat_pool = QtCore.QThreadPool()
         self.cpu_stat_pool = QtCore.QThreadPool()
@@ -57,7 +63,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_fancurve.fcurve_signal.fan_curve_thread.connect(self.set_gpu_fancurve)
         self.net_worker.net_signal.net_proc_thread.connect(self.show_net_stats)
         self.cpu_timer.timeout.connect(self.refresh_graph_cpu)
-        self.mem_timer.timeout.connect(self.refresh_graph_mem)
         self.gpu_cfan_checkbox.toggled.connect(self.enable_manual_fanspeed)
         self.process_table_widget.cellClicked.connect(self.choose_kill_process)
         self.end_task_pushbutton.clicked.connect(self.kill_process)
@@ -82,9 +87,17 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.gpu_graph_widget.addItem(self.p1)
         self.tab_widget.currentChanged.connect(self.set_gpu_tab)
         self.gpu_graph_widget.setMouseEnabled(x=False, y=False)
-        self.process_mem_graph.setMouseEnabled(x=False, y=False)
         self.cpu_graph_widget.setMouseEnabled(x=False, y=False)
-
+        self.process_mem_graph.addLabel(text='Used Mem', angle=-90, color='r',)
+        self.process_mem_graph.addLabel(text="Free Mem", angle=-90, color='b')
+        self.process_mem_graph.addLabel(text='Used Swap', angle=-90, color='g')
+        self.used_mem_plot = self.process_mem_graph.addPlot(axisItems={'bottom': TimeAxisItem(orientation='bottom')})
+        self.mem_data1 = []
+        self.mem_data2 = []
+        self.mem_data3 = []
+        self.mem_curve1 = self.used_mem_plot.plot()
+        self.mem_curve2 = self.used_mem_plot.plot()
+        self.mem_curve3 = self.used_mem_plot.plot()
 
     def set_gpu_tab(self):
         gpu_vendor = "glxinfo | grep 'OpenGL vendor string:'"
@@ -118,17 +131,20 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
 
     @QtCore.pyqtSlot(int, int, int)
     def update_mem_graph(self, used_mem, free_mem, used_swap):
-        ticks = ["used", "free", "swap"]
-        xdict = dict(enumerate(ticks))
-        y1 = [used_mem, free_mem, used_swap]
-        x1 = np.arange(3)
-        self.process_mem_graph.getAxis('bottom').setTicks([xdict.items()])
-        self.process_mem_graph.setLabel('left', '<span style="color: white">Memory</span>', units='%')
-        self.process_mem_graph.setYRange(0, 100, padding=0)
-        self.process_mem_graph.setXRange(0, 3, padding=0.1)
-        self.process_mem_graph.showGrid(x=True, y=True, alpha=0.3)
-        p1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
-        self.process_mem_graph.addItem(p1)
+        self.mem_data1.append({'x': self.memtime.elapsed(), 'y': used_mem})
+        self.mem_data2.append({'x': self.memtime.elapsed(), 'y': free_mem})
+        self.mem_data3.append({'x': self.memtime.elapsed(), 'y': used_swap})
+
+        x1 = [item['x'] for item in self.mem_data1]
+        y1 = [item['y'] for item in self.mem_data1]
+        x2 = [item['x'] for item in self.mem_data2]
+        y2 = [item['y'] for item in self.mem_data2]
+        x3 = [item['x'] for item in self.mem_data3]
+        y3 = [item['y'] for item in self.mem_data3]
+
+        self.mem_curve1.setData(x=x1, y=y1, pen='r')
+        self.mem_curve2.setData(x=x2, y=y2, pen='b')
+        self.mem_curve3.setData(x=x3, y=y3, pen='g')
 
     def refresh_graph_mem(self):
         self.process_mem_graph.clear()

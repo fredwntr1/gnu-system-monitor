@@ -55,7 +55,7 @@ class MemGraphWorker(QtCore.QThread):
             used_swap = self.mem_worker_signal.p1.apply(mem_stats.swap_percent)
             self.mem_worker_signal.mem_graph_signal.emit(used_mem, free_mem, used_swap)
             QtCore.QCoreApplication.processEvents()
-            time.sleep(2)
+            time.sleep(1)
 
 
 

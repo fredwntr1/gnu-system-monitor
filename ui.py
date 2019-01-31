@@ -93,7 +93,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.swap_mem_label)
         self.horizontalLayout_15.addLayout(self.horizontalLayout_6)
         self.gridLayout.addLayout(self.horizontalLayout_15, 0, 0, 1, 2)
-        self.process_mem_graph = pyqtgraph.PlotWidget(self.process_tab_widget)
+        self.process_mem_graph = pyqtgraph.GraphicsLayoutWidget(self.process_tab_widget)
         self.process_mem_graph.setMinimumSize(QtCore.QSize(0, 275))
         self.process_mem_graph.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.process_mem_graph.setStyleSheet(_fromUtf8("QWidget {\n"
