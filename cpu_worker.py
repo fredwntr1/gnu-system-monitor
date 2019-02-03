@@ -52,5 +52,5 @@ class CpuGraphWorker(QtCore.QThread):
             cpu_load = self.graph_signal.p2.apply(cpu_stats.total_cpu_percentage)
             self.graph_signal.cpu_graph_signal.emit(core_count, cpu_load)
             QtCore.QCoreApplication.processEvents()
-            time.sleep(2)
+            time.sleep(1)
 

@@ -36,14 +36,6 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.memtime = pg.QtCore.QTime()
         self.memtime.start()
         self.cpu_graph_worker = cpu_worker.CpuGraphWorker()
-        self.mem_stat_pool = QtCore.QThreadPool()
-        self.cpu_stat_pool = QtCore.QThreadPool()
-        self.gpu_stat_pool = QtCore.QThreadPool()
-        self.net_stat_pool = QtCore.QThreadPool()
-        self.mem_stat_pool.setMaxThreadCount(3)
-        self.cpu_stat_pool.setMaxThreadCount(3)
-        self.gpu_stat_pool.setMaxThreadCount(2)
-        self.net_stat_pool.setMaxThreadCount(1)
         self.mem_stats.start()
         self.mem_table.start()
         self.mem_graph_worker.start()
@@ -122,7 +114,7 @@ class MainClass(QtGui.QMainWindow, ui.Ui_MainWindow):
         self.cpu_graph_widget.setXRange(0, len(cores), padding=0.1)
         self.cpu_graph_widget.setYRange(0, 100, padding=0)
         self.cpu_graph_widget.showGrid(x=True, y=True, alpha=0.3)
-        c1 = pg.BarGraphItem(x=x1, height=y1, width=0.3)
+        c1 = pg.BarGraphItem(x=x1, height=y1, width=0.3, brush='b')
         self.cpu_graph_widget.addItem(c1)
 
     def refresh_graph_cpu(self):
