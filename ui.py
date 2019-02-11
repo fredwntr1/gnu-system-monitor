@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'gsm.ui'
-#
-# Created by: PyQt5 UI code generator 5.11.3
-#
-# WARNING! All changes made in this file will be lost!
-
 from PyQt5 import QtCore, QtGui, QtWidgets
+import pyqtgraph
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -85,7 +79,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.swap_mem_label)
         self.horizontalLayout_15.addLayout(self.horizontalLayout_6)
         self.gridLayout.addLayout(self.horizontalLayout_15, 0, 0, 1, 2)
-        self.process_mem_graph = QtWidgets.QWidget(self.process_tab_widget)
+        self.process_mem_graph = pyqtgraph.GraphicsLayoutWidget(self.process_tab_widget)
         self.process_mem_graph.setMinimumSize(QtCore.QSize(0, 275))
         self.process_mem_graph.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.process_mem_graph.setStyleSheet("QWidget {\n"
@@ -111,8 +105,17 @@ class Ui_MainWindow(object):
 "    border-top-right-radius: 7px;\n"
 "}")
         self.process_table_widget.setObjectName("process_table_widget")
-        self.process_table_widget.setColumnCount(0)
+        self.process_table_widget.setColumnCount(5)
         self.process_table_widget.setRowCount(0)
+        self.process_header = self.process_table_widget.horizontalHeader()
+        self.process_header.setSectionResizeMode(0, QtGui.QHeaderView.Stretch)
+        self.process_header.setSectionResizeMode(1, QtGui.QHeaderView.Stretch)
+        self.process_header.setSectionResizeMode(2, QtGui.QHeaderView.Stretch)
+        self.process_header.setSectionResizeMode(3, QtGui.QHeaderView.Stretch)
+        self.process_header.setSectionResizeMode(4, QtGui.QHeaderView.Stretch)
+        self.process_table_widget.setHorizontalHeaderLabels(['Process', 'User', 'CPU%', 'MEM%', 'PID'])
+        self.process_table_widget.setVerticalHeaderLabels([None])
+        self.process_table_widget.verticalHeader().setVisible(False)
         self.gridLayout.addWidget(self.process_table_widget, 3, 0, 1, 2)
         spacerItem1 = QtWidgets.QSpacerItem(1170, 24, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout.addItem(spacerItem1, 4, 0, 1, 1)
@@ -181,10 +184,12 @@ class Ui_MainWindow(object):
         self.cpu_table_widget = QtWidgets.QTableWidget(self.cpu_tab_widget)
         self.cpu_table_widget.setMinimumSize(QtCore.QSize(0, 100))
         self.cpu_table_widget.setObjectName("cpu_table_widget")
+        self.cpu_header = self.cpu_table_widget.horizontalHeader()
         self.cpu_table_widget.setColumnCount(0)
-        self.cpu_table_widget.setRowCount(0)
+        self.cpu_table_widget.setRowCount(2)
+        self.cpu_table_widget.setVerticalHeaderLabels(["MHz", "Percent"])
         self.verticalLayout_2.addWidget(self.cpu_table_widget)
-        self.cpu_graph_widget = QtWidgets.QWidget(self.cpu_tab_widget)
+        self.cpu_graph_widget = pyqtgraph.PlotWidget(self.cpu_tab_widget)
         self.cpu_graph_widget.setMinimumSize(QtCore.QSize(0, 400))
         self.cpu_graph_widget.setObjectName("cpu_graph_widget")
         self.verticalLayout_2.addWidget(self.cpu_graph_widget)
@@ -345,7 +350,13 @@ class Ui_MainWindow(object):
         self.gpu_cfan_checkbox.setObjectName("gpu_cfan_checkbox")
         self.horizontalLayout_11.addWidget(self.gpu_cfan_checkbox)
         self.gridLayout_2.addLayout(self.horizontalLayout_11, 7, 0, 1, 2)
-        self.gpu_graph_widget = QtWidgets.QWidget(self.gpu_tab_widget)
+        self.gpu_graph_widget = pyqtgraph.PlotWidget(self.gpu_tab_widget)
+        self.gpu_graph_widget.setXRange(0, 90, padding=0.006)
+        self.gpu_graph_widget.setYRange(0, 100, padding=0.006)
+        self.gpu_graph_widget.setLabel('left', 'Fanspeed', units='%')
+        self.gpu_graph_widget.setLabel('bottom', 'Temp', units='C')
+        self.gpu_graph_widget.showGrid(x=True, y=True, alpha=1)
+        self.gpu_graph_widget.setMouseTracking(True)
         self.gpu_graph_widget.setMinimumSize(QtCore.QSize(1050, 200))
         self.gpu_graph_widget.setObjectName("gpu_graph_widget")
         self.gridLayout_2.addWidget(self.gpu_graph_widget, 0, 0, 5, 1)
@@ -394,10 +405,17 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.net_process_widget = QtWidgets.QTableWidget(self.network_tab_widget)
         self.net_process_widget.setObjectName("net_process_widget")
-        self.net_process_widget.setColumnCount(0)
+        self.net_process_widget.setColumnCount(3)
         self.net_process_widget.setRowCount(0)
+        self.net_header = self.net_process_widget.horizontalHeader()
+        self.net_header.setResizeMode(0, QtGui.QHeaderView.Stretch)
+        self.net_header.setResizeMode(1, QtGui.QHeaderView.Stretch)
+        self.net_header.setResizeMode(2, QtGui.QHeaderView.Stretch)
+        self.net_process_widget.setHorizontalHeaderLabels(['Application', 'Download', 'Upload'])
+        self.net_process_widget.setVerticalHeaderLabels([None])
+        self.net_process_widget.verticalHeader().setVisible(False)
         self.gridLayout_4.addWidget(self.net_process_widget, 0, 0, 1, 1)
-        self.net_speed_graph = QtWidgets.QWidget(self.network_tab_widget)
+        self.net_speed_graph = pyqtgraph.PlotWidget(self.network_tab_widget)
         self.net_speed_graph.setMinimumSize(QtCore.QSize(600, 0))
         self.net_speed_graph.setObjectName("net_speed_graph")
         self.gridLayout_4.addWidget(self.net_speed_graph, 0, 1, 1, 2)
@@ -422,7 +440,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Complete System Monitor"))
         self.total_mem_label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:20pt;\">Total</span></p></body></html>"))
         self.free_mem_label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:20pt;\">Free</span></p></body></html>"))
         self.swap_mem_label.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"><span style=\" font-size:20pt;\">Swap</span></p></body></html>"))
@@ -431,13 +449,13 @@ class Ui_MainWindow(object):
         self.cpu_temp_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:20pt;\">Temp C</span></p></body></html>"))
         self.cpu_fan_speed_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:20pt;\">Cpu Fan </span></p></body></html>"))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.cpu_tab_widget), _translate("MainWindow", "CPU"))
-        self.gpu_oc_checkbox.setText(_translate("MainWindow", "CheckBox"))
-        self.gpu_fcurve_checkbox.setText(_translate("MainWindow", "CheckBox"))
-        self.gpu_adaptive_radio.setText(_translate("MainWindow", "RadioButton"))
+        self.gpu_oc_checkbox.setText(_translate("MainWindow", "Manual OC"))
+        self.gpu_fcurve_checkbox.setText(_translate("MainWindow", "Set Fancurve"))
+        self.gpu_adaptive_radio.setText(_translate("MainWindow", "Adaptive"))
         self.gpu_mem_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">M Speed</span></p></body></html>"))
-        self.gpu_performance_radio.setText(_translate("MainWindow", "RadioButton"))
+        self.gpu_performance_radio.setText(_translate("MainWindow", "Performance"))
         self.gpu_watts_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">Gpu Watts</span></p></body></html>"))
-        self.gpu_cfan_checkbox.setText(_translate("MainWindow", "CheckBox"))
+        self.gpu_cfan_checkbox.setText(_translate("MainWindow", "Manual Fan"))
         self.gpu_clock_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">Gpu Speed</span></p></body></html>"))
         self.gpu_temp_label.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:16pt;\">Gpu Temp</span></p></body></html>"))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.gpu_tab_widget), _translate("MainWindow", "GPU"))
