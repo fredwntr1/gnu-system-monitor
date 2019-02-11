@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 import time
 import subprocess
 import multiprocessing
@@ -68,5 +68,3 @@ class GpuFanCurve(QtCore.QThread):
                 self.fcurve_signal.fan_curve_thread.emit(gpu_temp, speed, show_gpu_vendor, max_fan)
                 QtCore.QCoreApplication.processEvents()
                 time.sleep(1)
-
-

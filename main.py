@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
 import ui
@@ -390,4 +390,3 @@ if __name__ == '__main__':
     a.processEvents()
     app.show()
     sys.exit(a.exec_())
-

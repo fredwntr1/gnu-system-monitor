@@ -1,5 +1,5 @@
 import time
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 import mem_stats
 import multiprocessing
 
@@ -56,6 +56,3 @@ class MemGraphWorker(QtCore.QThread):
             self.mem_worker_signal.mem_graph_signal.emit(used_mem, free_mem, used_swap)
             QtCore.QCoreApplication.processEvents()
             time.sleep(1)
-
-
-

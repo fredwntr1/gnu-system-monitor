@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 import net_stats
 import time
 
@@ -20,4 +20,3 @@ class NetProcessWorker(QtCore.QThread):
             self.net_signal.net_proc_thread.emit(net_processes, net_download, net_upload)
             QtCore.QCoreApplication.processEvents()
             time.sleep(3)
-

@@ -1,5 +1,5 @@
 import time
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 import cpu_stats
 import multiprocessing
 
@@ -53,4 +53,3 @@ class CpuGraphWorker(QtCore.QThread):
             self.graph_signal.cpu_graph_signal.emit(core_count, cpu_load)
             QtCore.QCoreApplication.processEvents()
             time.sleep(1)
-
